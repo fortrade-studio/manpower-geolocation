@@ -9,14 +9,17 @@ import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import com.fortradestudio.mapowergeolocationtracker.R
 import com.fortradestudio.mapowergeolocationtracker.databinding.FragmentLoginBinding
+import com.fortradestudio.mapowergeolocationtracker.utils.Utils
 import com.fortradestudio.mapowergeolocationtracker.viewmodel.loginFragment.LoginFragmentViewModel
 import com.fortradestudio.mapowergeolocationtracker.viewmodel.loginFragment.LoginFragmentViewModelFactory
 
 
 class LoginFragment : Fragment() {
 
-    companion object{
+    companion object {
         private const val TAG = "LoginFragment"
+
+        private const val number_cache_key = "phoneNumber"
     }
 
     private lateinit var loginFragmentBinding: FragmentLoginBinding
@@ -34,7 +37,10 @@ class LoginFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         loginFragmentViewModel =
-            ViewModelProvider(this, LoginFragmentViewModelFactory(requireActivity(),requireView())).get(
+            ViewModelProvider(
+                this,
+                LoginFragmentViewModelFactory(requireActivity(), requireView())
+            ).get(
                 LoginFragmentViewModel::class.java
             )
 
@@ -42,9 +48,12 @@ class LoginFragment : Fragment() {
             verifyButton.setOnClickListener {
                 val phoneNumber = phoneNumberEditText.text.toString()
                 loginFragmentViewModel.checkIfMobileNumberIsValid(phoneNumber) {
-                    if (it) loginFragmentViewModel.sendNumberForOTP(phoneNumber)
+                    if (it) {
+                        loginFragmentViewModel.showDialog()
+                        loginFragmentViewModel.sendNumberForOTP(phoneNumber)
+                    }
                     else {
-                        Log.i(TAG, "onViewCreated: invalid number")
+                        phoneNumberEditText.error = getString(R.string.invalidNumber)
                     }
                 }
             }

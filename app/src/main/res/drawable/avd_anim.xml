@@ -1,0 +1,57 @@
+<animated-vector
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt">
+    <aapt:attr name="android:drawable">
+        <vector
+            android:name="vector"
+            android:width="85dp"
+            android:height="77dp"
+            android:viewportWidth="85"
+            android:viewportHeight="77">
+            <group
+                android:name="group_1"
+                android:pivotX="40"
+                android:pivotY="40">
+                <path
+                    android:name="path_1"
+                    android:pathData="M 39 75 C 18.566 75 2 58.658 2 38.5 C 2 18.342 18.566 2 39 2"
+                    android:fillColor="#ffffff"
+                    android:strokeColor="#ff0000"
+                    android:strokeWidth="3"/>
+            </group>
+            <group
+                android:name="group"
+                android:pivotX="40"
+                android:pivotY="40">
+                <path
+                    android:name="path"
+                    android:pathData="M 64 39 C 64 25.193 52.807 14 39 14 C 25.193 14 14 25.193 14 39"
+                    android:fillColor="#ffffff"
+                    android:strokeColor="#ff0c0c"
+                    android:strokeWidth="3"/>
+            </group>
+        </vector>
+    </aapt:attr>
+    <target android:name="group">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:propertyName="rotation"
+                android:duration="1000"
+                android:valueFrom="0"
+                android:valueTo="-360"
+                android:valueType="floatType"
+                android:interpolator="@android:anim/linear_interpolator"/>
+        </aapt:attr>
+    </target>
+    <target android:name="group_1">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:propertyName="rotation"
+                android:duration="1000"
+                android:valueFrom="0"
+                android:valueTo="360"
+                android:valueType="floatType"
+                android:interpolator="@android:anim/linear_interpolator"/>
+        </aapt:attr>
+    </target>
+</animated-vector>
