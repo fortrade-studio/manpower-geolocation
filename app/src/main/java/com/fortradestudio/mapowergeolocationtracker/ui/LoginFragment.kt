@@ -1,6 +1,7 @@
 package com.fortradestudio.mapowergeolocationtracker.ui
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -13,6 +14,10 @@ import com.fortradestudio.mapowergeolocationtracker.viewmodel.loginFragment.Logi
 
 
 class LoginFragment : Fragment() {
+
+    companion object{
+        private const val TAG = "LoginFragment"
+    }
 
     private lateinit var loginFragmentBinding: FragmentLoginBinding
     private lateinit var loginFragmentViewModel: LoginFragmentViewModel
@@ -29,7 +34,7 @@ class LoginFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         loginFragmentViewModel =
-            ViewModelProvider(this, LoginFragmentViewModelFactory(requireActivity())).get(
+            ViewModelProvider(this, LoginFragmentViewModelFactory(requireActivity(),requireView())).get(
                 LoginFragmentViewModel::class.java
             )
 
@@ -37,9 +42,9 @@ class LoginFragment : Fragment() {
             verifyButton.setOnClickListener {
                 val phoneNumber = phoneNumberEditText.text.toString()
                 loginFragmentViewModel.checkIfMobileNumberIsValid(phoneNumber) {
-                    if (it) loginFragmentViewModel.sendNumberForOTP()
+                    if (it) loginFragmentViewModel.sendNumberForOTP(phoneNumber)
                     else {
-
+                        Log.i(TAG, "onViewCreated: invalid number")
                     }
                 }
             }

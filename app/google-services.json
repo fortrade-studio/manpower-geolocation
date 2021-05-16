@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "380456678178",
+    "project_id": "manpower-geolocation",
+    "storage_bucket": "manpower-geolocation.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:380456678178:android:b9c58bf017c7822c4feb7b",
+        "android_client_info": {
+          "package_name": "com.fortradestudio.mapowergeolocationtracker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "380456678178-1ne5tvvno9bshbbldnkouhb0ca46ifpj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.fortradestudio.mapowergeolocationtracker",
+            "certificate_hash": "38e0357042b2e928e6e0817e4449d8b83b99b40f"
+          }
+        },
+        {
+          "client_id": "380456678178-59smc0j2ve9kg9253lgusl3p0mv93skm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAbFP1uzIRT74BVr2mvPLgFdT6DqbOTwdA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "380456678178-59smc0j2ve9kg9253lgusl3p0mv93skm.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
