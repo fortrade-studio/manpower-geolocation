@@ -1,51 +1,59 @@
 package com.fortradestudio.mapowergeolocationtracker.ui
 
-import `in`.aabhasjindal.otptextview.OTPListener
 import android.os.Bundle
-import android.util.Log
-import androidx.fragment.app.Fragment
+import android.os.CountDownTimer
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.ViewModel
+import android.widget.Toast
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import com.fortradestudio.mapowergeolocationtracker.R
 import com.fortradestudio.mapowergeolocationtracker.databinding.FragmentOneTimPasswordBinding
 import com.fortradestudio.mapowergeolocationtracker.utils.Utils
+import com.fortradestudio.mapowergeolocationtracker.viewmodel.SharedViewModel
+import com.fortradestudio.mapowergeolocationtracker.viewmodel.loginFragment.LoginFragmentViewModel
 import com.fortradestudio.mapowergeolocationtracker.viewmodel.otpFragment.OneTimePassViewModel
 import com.fortradestudio.mapowergeolocationtracker.viewmodel.otpFragment.OneTimePassViewModelFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
+
 class OneTimPasswordFragment : Fragment() {
 
-    companion object{
+    companion object {
         private const val TAG = "OneTimPasswordFragment"
         private const val number_cache_key = "phoneNumber"
     }
 
-    private lateinit var oneTimeFragmentBinding : FragmentOneTimPasswordBinding
+    private lateinit var oneTimeFragmentBinding: FragmentOneTimPasswordBinding
     private lateinit var oneTimePassViewModel: OneTimePassViewModel
-    private val mainScope= CoroutineScope(Dispatchers.Main)
+    private val mainScope = CoroutineScope(Dispatchers.Main)
+    private val sharedViewModel: SharedViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         // Inflate the layout for this fragment
-        oneTimeFragmentBinding = FragmentOneTimPasswordBinding.inflate(inflater,container,false)
+        oneTimeFragmentBinding = FragmentOneTimPasswordBinding.inflate(inflater, container, false)
         return oneTimeFragmentBinding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        oneTimePassViewModel = ViewModelProvider(this,OneTimePassViewModelFactory(requireActivity(),requireView())).get(OneTimePassViewModel::class.java)
+        oneTimePassViewModel = ViewModelProvider(
+            this,
+            OneTimePassViewModelFactory(requireActivity(), requireView())
+        ).get(OneTimePassViewModel::class.java)
 
         val fromCache = Utils(requireActivity()).getFromCache(number_cache_key)
 
-        if(fromCache!=null){
-            oneTimeFragmentBinding.phoneNumberTextView.text = "${getString(R.string.headerText)} \n \t\t\t\t\t\t\t\t +91 $fromCache"
+        if (fromCache != null) {
+            oneTimeFragmentBinding.phoneNumberTextView.text =
+                "${getString(R.string.headerText)} \n \t\t\t\t\t\t\t\t +91 $fromCache"
         }
 
 
@@ -53,15 +61,47 @@ class OneTimPasswordFragment : Fragment() {
             verifyButton.setOnClickListener {
                 oneTimePassViewModel.showDialog()
                 val otp = otpView.otp
-                oneTimePassViewModel.verifyOtp(otp){
-                    if(!it){
+                oneTimePassViewModel.verifyOtp(otp) {
+                    if (!it) {
                         mainScope.launch { otpView.showError() }
-                    }else{
+                    } else {
                         mainScope.launch { otpView.showSuccess() }
                     }
                 }
             }
         }
+
+
+        oneTimeFragmentBinding.include2.resendOtp.setOnClickListener {
+
+                val phoneNumber = sharedViewModel.phNumber.value.toString()
+                oneTimePassViewModel.checkIfMobileNumberIsValid(phoneNumber) {
+                    if (it) {
+//                        oneTimePassViewModel.showDialog()
+                        oneTimePassViewModel.sendNumberForOTP(phoneNumber)
+                    }
+                }
+
+
+                Toast.makeText(activity, "OTP sent again to " + phoneNumber, Toast.LENGTH_SHORT)
+                    .show()
+
+            object : CountDownTimer(30000, 1000) {
+                override fun onTick(millisUntilFinished: Long) {
+                    oneTimeFragmentBinding.include2.countdown.setText("Try again after: " + millisUntilFinished / 1000)
+                    oneTimeFragmentBinding.include2.resendOtp.setVisibility(View.INVISIBLE)
+                }
+
+                override fun onFinish() {
+                    oneTimeFragmentBinding.include2.countdown.setText("Don't receive the OTP ?")
+                    oneTimeFragmentBinding.include2.resendOtp.setVisibility(View.VISIBLE)
+                }
+            }.start()
+        }
+
+
     }
+
+
 
 }

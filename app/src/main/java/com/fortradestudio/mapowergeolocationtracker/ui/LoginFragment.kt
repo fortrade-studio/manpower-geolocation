@@ -1,15 +1,15 @@
 package com.fortradestudio.mapowergeolocationtracker.ui
 
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import com.fortradestudio.mapowergeolocationtracker.R
 import com.fortradestudio.mapowergeolocationtracker.databinding.FragmentLoginBinding
-import com.fortradestudio.mapowergeolocationtracker.utils.Utils
+import com.fortradestudio.mapowergeolocationtracker.viewmodel.SharedViewModel
 import com.fortradestudio.mapowergeolocationtracker.viewmodel.loginFragment.LoginFragmentViewModel
 import com.fortradestudio.mapowergeolocationtracker.viewmodel.loginFragment.LoginFragmentViewModelFactory
 
@@ -24,6 +24,9 @@ class LoginFragment : Fragment() {
 
     private lateinit var loginFragmentBinding: FragmentLoginBinding
     private lateinit var loginFragmentViewModel: LoginFragmentViewModel
+
+    private val sharedViewModel: SharedViewModel by activityViewModels()
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -47,12 +50,13 @@ class LoginFragment : Fragment() {
         with(loginFragmentBinding) {
             verifyButton.setOnClickListener {
                 val phoneNumber = phoneNumberEditText.text.toString()
+//                val phoneNumber = "1234567890"
+                sharedViewModel.savePhoneNumber(phoneNumber)
                 loginFragmentViewModel.checkIfMobileNumberIsValid(phoneNumber) {
                     if (it) {
                         loginFragmentViewModel.showDialog()
                         loginFragmentViewModel.sendNumberForOTP(phoneNumber)
-                    }
-                    else {
+                    } else {
                         phoneNumberEditText.error = getString(R.string.invalidNumber)
                     }
                 }

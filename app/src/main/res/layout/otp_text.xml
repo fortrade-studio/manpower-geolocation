@@ -7,6 +7,7 @@
 
 
     <TextView
+        android:id="@+id/countdown"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:theme="@style/h1TextView"
@@ -15,6 +16,7 @@
         />
 
     <TextView
+        android:id="@+id/resend_otp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:theme="@style/h1TextView"
