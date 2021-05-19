@@ -74,21 +74,21 @@ class OneTimPasswordFragment : Fragment() {
 
         oneTimeFragmentBinding.include2.resendOtp.setOnClickListener {
 
-                val phoneNumber = sharedViewModel.phNumber.value.toString()
-                oneTimePassViewModel.checkIfMobileNumberIsValid(phoneNumber) {
-                    if (it) {
+            val phoneNumber = sharedViewModel.phNumber.value.toString()
+            oneTimePassViewModel.checkIfMobileNumberIsValid(phoneNumber) {
+                if (it) {
 //                        oneTimePassViewModel.showDialog()
-                        oneTimePassViewModel.sendNumberForOTP(phoneNumber)
-                    }
+                    oneTimePassViewModel.sendNumberForOTP(phoneNumber)
                 }
+            }
 
 
-                Toast.makeText(activity, "OTP sent again to " + phoneNumber, Toast.LENGTH_SHORT)
-                    .show()
+            Toast.makeText(activity, "OTP sent again to " + phoneNumber, Toast.LENGTH_SHORT)
+                .show()
 
             object : CountDownTimer(30000, 1000) {
                 override fun onTick(millisUntilFinished: Long) {
-                    oneTimeFragmentBinding.include2.countdown.setText("Try again after: " + millisUntilFinished / 1000)
+                    oneTimeFragmentBinding.include2.countdown.setText("Try again after: " + millisUntilFinished / 1000 + "s")
                     oneTimeFragmentBinding.include2.resendOtp.setVisibility(View.INVISIBLE)
                 }
 
@@ -101,7 +101,6 @@ class OneTimPasswordFragment : Fragment() {
 
 
     }
-
 
 
 }
