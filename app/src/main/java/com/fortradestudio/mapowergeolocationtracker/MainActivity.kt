@@ -9,6 +9,9 @@ import android.content.Intent
 import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
+import androidx.fragment.app.replace
+import com.fortradestudio.mapowergeolocationtracker.ui.LoginFragment
+import com.fortradestudio.mapowergeolocationtracker.ui.OneTimPasswordFragment
 import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
@@ -106,6 +109,4 @@ class MainActivity : AppCompatActivity() {
             LocationManager.NETWORK_PROVIDER
         );
     }
-
-
 }
