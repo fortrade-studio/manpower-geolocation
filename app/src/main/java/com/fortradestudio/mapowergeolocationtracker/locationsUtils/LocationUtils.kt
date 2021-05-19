@@ -10,33 +10,40 @@ import android.os.Looper
 import android.provider.Settings
 import android.widget.Toast
 import com.fortradestudio.mapowergeolocationtracker.R
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationResult
-import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.*
+import java.lang.Math.sin
 import java.lang.NullPointerException
 
 
 class LocationUtils(
-    val activity: Activity
+    val activity: Activity,
+    val context: Context?=null
 ) {
 
-    val locationServices by lazy {
-        LocationServices.getFusedLocationProviderClient(activity)
+    val locationServices: FusedLocationProviderClient by lazy {
+       getLocationProvider()
     }
 
+    private fun getLocationProvider() : FusedLocationProviderClient= if(context==null) {
+        LocationServices.getFusedLocationProviderClient(activity)
+    }
+    else
+    {
+        LocationServices.getFusedLocationProviderClient(context)
+    }
 
 
     @SuppressLint("MissingPermission")
     fun getLocationCoordinates(onLocationFetched: (Location) -> Unit, onError: (Exception) -> Unit){
 
-
         if(checkifLocationOn()){
             locationServices.lastLocation.addOnSuccessListener {
-                if(it==null){
-                    requestLocationAgain(LocationCallbackExtension({
-                        onLocationFetched(it)
-                    }){onError(NullPointerException())});
+                if(it==null ){
+                    if(context==null) {
+                        requestLocationAgain(LocationCallbackExtension({
+                            onLocationFetched(it)
+                        }) { onError(NullPointerException()) });
+                    }
                 }else{
                     onLocationFetched(it)
                 }
@@ -45,9 +52,21 @@ class LocationUtils(
             }
         }
         else{
-           openLocationSetting()
+            if(context==null) openLocationSetting()
         }
 
+    }    @SuppressLint("MissingPermission")
+    fun getLocationCoordinates(context: Context,onLocationFetched: (Location) -> Unit, onError: (Exception) -> Unit){
+
+        if(checkifLocationOn(context)){
+            locationServices.lastLocation.addOnSuccessListener {
+                if(it!=null ){
+                    onLocationFetched(it)
+                }
+            }.addOnFailureListener {
+                onError(it)
+            }
+        }
     }
 
     @SuppressLint("MissingPermission")
@@ -59,6 +78,22 @@ class LocationUtils(
         mLocationRequest.numUpdates = 1
 
         locationServices.requestLocationUpdates(mLocationRequest, locationCallbackExtension,Looper.myLooper())
+    }
+
+
+    companion object{
+         fun calculateLinearDistance(location: Location, target: LocationDao): Double {
+            val R = 6378.137; // Radius of earth in KM
+            val dLat = target.latitude * Math.PI / 180 - location.latitude * Math.PI / 180;
+            val dLon = target.longitude * Math.PI / 180 - location.longitude * Math.PI / 180;
+            val a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                    Math.cos(location.latitude * Math.PI / 180) * Math.cos(target.latitude * Math.PI / 180) *
+                    Math.sin(dLon/2) * sin(dLon/2);
+            val c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            val d = R * c;
+
+            return d * 1000
+        }
     }
 
 
@@ -75,5 +110,12 @@ class LocationUtils(
             LocationManager.NETWORK_PROVIDER
         );
     }
+    private fun checkifLocationOn(context: Context):Boolean{
+        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager;
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(
+            LocationManager.NETWORK_PROVIDER
+        );
+    }
+
 
 }

@@ -19,10 +19,20 @@ class Utils(private val activity: Activity) {
         editor.putString(key,s);
         editor.apply()
     }
+    fun storeInCache(s:String,key:String,context: Context){
+        val preferences = context.getSharedPreferences(verifyPreference,Context.MODE_PRIVATE)
+        val editor = preferences.edit();
+        editor.putString(key,s);
+        editor.apply()
+    }
 
     fun getFromCache(key: String):String?{
         val preferences = activity.getSharedPreferences(verifyPreference,Context.MODE_PRIVATE)
         return preferences.getString(key,null);
+    }
+    fun getFromCache(key: String,context: Context):Boolean?{
+        val preferences = context.getSharedPreferences(verifyPreference,Context.MODE_PRIVATE)
+        return preferences.getBoolean(key,false);
     }
 
 }

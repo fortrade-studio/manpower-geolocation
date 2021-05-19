@@ -32,5 +32,16 @@
     <string name="cancel">Cancel</string>
     <string name="need_to_allow">You need to allow necessary permissions in Settings manually</string>
     <string name="open_location">Please turn on your location</string>
+    <string name="channel_name">SiteLocationNotificationChannel</string>
+    <string name="channel_description">Notify User When he reaches near target location</string>
+
+
+    <!-- Home fragment -->
+
+    <string name="welcome_livespace">Welcome,</string>
+    <string name="loading_home">Loading....</string>
+    <string name="something_went_wrong">Something went wrong...Please check your connection</string>
+    <string name="vendor_address_error">Failed To Load Vendor Addresses</string>
+    <string name="join">Join</string>
 
 </resources>

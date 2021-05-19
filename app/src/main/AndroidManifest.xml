@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.fortradestudio.mapowergeolocationtracker" >
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.fortradestudio.mapowergeolocationtracker">
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
 
     <application
+        android:name=".ManpowerApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -20,6 +22,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- ADD THE FOLLOWING NODE -->
+        <service android:name=".service.NotificationService"
+                android:permission="android.permission.BIND_JOB_SERVICE"/>
+
+
     </application>
 
 </manifest>
