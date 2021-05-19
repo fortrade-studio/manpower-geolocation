@@ -25,4 +25,12 @@
     <string name="loading">Loading</string>
 
 
+    <!-- Main activity -->
+
+    <string name="dialog_reason">Location Permission is required</string>
+    <string name="okay">Okay</string>
+    <string name="cancel">Cancel</string>
+    <string name="need_to_allow">You need to allow necessary permissions in Settings manually</string>
+    <string name="open_location">Please turn on your location</string>
+
 </resources>
