@@ -5,10 +5,11 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = arrayOf(VendorAddresses::class),version = 6,exportSchema = true)
+@Database(entities = [VendorAddresses::class, User::class],version = 8,exportSchema = true)
 abstract class VendorAddressDatabase :RoomDatabase() {
 
     abstract fun getDao():VendorAddressDao
+    abstract fun getUserDao():UserDao
 
     companion object{
         private var vendorAddresses:VendorAddressDatabase?=null

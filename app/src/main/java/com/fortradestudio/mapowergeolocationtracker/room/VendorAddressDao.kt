@@ -17,6 +17,8 @@ interface VendorAddressDao {
     @Insert
     fun storeVendorAddress(vararg vendorAddresses: VendorAddresses)
 
+
+
     @Delete
     fun deleteVendorAddress(vendorAddresses: VendorAddresses)
 

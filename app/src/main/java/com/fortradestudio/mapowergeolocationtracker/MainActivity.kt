@@ -1,28 +1,22 @@
 package com.fortradestudio.mapowergeolocationtracker
 
 import android.Manifest
-import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.location.LocationManager
+import android.net.ConnectivityManager
+import android.net.NetworkRequest
 import android.os.Build
 import android.os.Bundle
-import androidx.fragment.app.replace
-import com.fortradestudio.mapowergeolocationtracker.ui.LoginFragment
-import com.fortradestudio.mapowergeolocationtracker.ui.OneTimPasswordFragment
 import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.NotificationCompat
-import androidx.fragment.app.FragmentTransaction
-import androidx.navigation.Navigation
-import androidx.navigation.findNavController
-import com.fortradestudio.mapowergeolocationtracker.service.NotificationService
 import com.fortradestudio.mapowergeolocationtracker.ui.HomeFragment
-import com.fortradestudio.mapowergeolocationtracker.utils.Utils
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.dialog.MaterialDialogs
 import com.permissionx.guolindev.PermissionX
 
 
@@ -96,6 +90,7 @@ class MainActivity : AppCompatActivity() {
                  }
             }
     }
+
 
     private fun openLocationSetting(){
         Toast.makeText(this, R.string.open_location, Toast.LENGTH_SHORT).show()

@@ -71,14 +71,25 @@ class OneTimPasswordFragment : Fragment() {
             }
         }
 
+        object : CountDownTimer(30000, 1000) {
+            override fun onTick(millisUntilFinished: Long) {
+                oneTimeFragmentBinding.include2.countdown.setText("Try again after: " + millisUntilFinished / 1000 + "s")
+                oneTimeFragmentBinding.include2.resendOtp.setVisibility(View.GONE)
+            }
+
+            override fun onFinish() {
+                oneTimeFragmentBinding.include2.countdown.setText("Don't receive the OTP ?")
+                oneTimeFragmentBinding.include2.resendOtp.setVisibility(View.VISIBLE)
+            }
+        }.start()
 
         oneTimeFragmentBinding.include2.resendOtp.setOnClickListener {
 
             val phoneNumber = sharedViewModel.phNumber.value.toString()
             oneTimePassViewModel.checkIfMobileNumberIsValid(phoneNumber) {
                 if (it) {
-//                        oneTimePassViewModel.showDialog()
-                    oneTimePassViewModel.sendNumberForOTP(phoneNumber)
+
+                        oneTimePassViewModel.sendNumberForOTP(phoneNumber)
                 }
             }
 
@@ -88,13 +99,13 @@ class OneTimPasswordFragment : Fragment() {
 
             object : CountDownTimer(30000, 1000) {
                 override fun onTick(millisUntilFinished: Long) {
-                    oneTimeFragmentBinding.include2.countdown.setText("Try again after: " + millisUntilFinished / 1000 + "s")
-                    oneTimeFragmentBinding.include2.resendOtp.setVisibility(View.INVISIBLE)
+                    oneTimeFragmentBinding.include2.countdown.text = "Try again after: " + millisUntilFinished / 1000 + "s"
+                    oneTimeFragmentBinding.include2.resendOtp.visibility = View.INVISIBLE
                 }
 
                 override fun onFinish() {
-                    oneTimeFragmentBinding.include2.countdown.setText("Don't receive the OTP ?")
-                    oneTimeFragmentBinding.include2.resendOtp.setVisibility(View.VISIBLE)
+                    oneTimeFragmentBinding.include2.countdown.text = "Don't receive the OTP ?"
+                    oneTimeFragmentBinding.include2.resendOtp.visibility = View.VISIBLE
                 }
             }.start()
         }

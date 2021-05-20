@@ -43,8 +43,12 @@ class OneTimePassViewModel(
     private val loginRepository: LoginRepository = LoginRepositoryImpl(activity)
     private val mainScope = CoroutineScope(Dispatchers.Main)
 
-    fun verifyOtp(otp: String, onResult: (Boolean) -> Unit) =
+    fun verifyOtp(otp: String, onResult: (Boolean) -> Unit)=
         CoroutineScope(Dispatchers.IO).launch {
+            if(otp.isEmpty()){
+                onResult(false)
+                return@launch
+            }
             loginRepository.verifyOTP(otp) {
                 dialog.cancel()
                 if (it == -11) {
@@ -61,10 +65,13 @@ class OneTimePassViewModel(
     }
 
     private fun validator(ph:String):Boolean{
-        return ph.matches(Regex("[0-9]+")) && ph.length == 10
+        return  ph.isNotEmpty()&& ph.matches(Regex("[0-9]+")) && ph.length == 10
     }
 
     fun sendNumberForOTP(phoneNumber: String) = CoroutineScope(Dispatchers.IO).launch {
+        if(phoneNumber.isEmpty()){
+            return@launch
+        }
         loginRepository.sendNumberForVerification(phoneNumber) {
             when (it) {
                 0 -> {
@@ -73,7 +80,10 @@ class OneTimePassViewModel(
                         phoneNumber,
                         OneTimePassViewModel.number_cache_key
                     )
-                    dialog.cancel()
+                    try {
+                        dialog.cancel()
+                    }catch (e : UninitializedPropertyAccessException){}
+
                     Navigation.findNavController(view)
                         .navigate(R.id.action_loginFragment_to_oneTimPasswordFragment)
                 }

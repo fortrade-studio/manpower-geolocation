@@ -1,19 +1,15 @@
 package com.fortradestudio.mapowergeolocationtracker.ui
 
-import android.app.Activity
-import android.app.job.JobInfo
-import android.app.job.JobScheduler
-import android.content.ComponentName
+import android.app.AlertDialog
 import android.content.Context
+import android.net.ConnectivityManager
+import android.net.Network
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
-import android.widget.Toast
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.fortradestudio.mapowergeolocationtracker.R
@@ -22,20 +18,12 @@ import com.fortradestudio.mapowergeolocationtracker.locationsUtils.LocationDao
 import com.fortradestudio.mapowergeolocationtracker.locationsUtils.LocationUtils
 import com.fortradestudio.mapowergeolocationtracker.locationsUtils.LocationUtils.Companion.calculateLinearDistance
 import com.fortradestudio.mapowergeolocationtracker.recyclerAdapter.AddressesAdapter
-import com.fortradestudio.mapowergeolocationtracker.retrofit.LabourEntity
-import com.fortradestudio.mapowergeolocationtracker.retrofit.RetrofitProvider
 import com.fortradestudio.mapowergeolocationtracker.retrofit.VendorEntity
-import com.fortradestudio.mapowergeolocationtracker.service.NotificationService
-import com.fortradestudio.mapowergeolocationtracker.utils.Utils
 import com.fortradestudio.mapowergeolocationtracker.viewmodel.homeFragment.HomeFragmentViewModel
 import com.fortradestudio.mapowergeolocationtracker.viewmodel.homeFragment.HomeFragmentViewModelFactory
-import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import java.lang.Math.abs
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -44,6 +32,7 @@ class HomeFragment : Fragment() {
 
     lateinit var homeFragmentBinding : FragmentHomeBinding
     lateinit var homeFragmentViewModel : HomeFragmentViewModel
+    lateinit var dialog:AlertDialog
 
     companion object {
         private const val TAG = "HomeFragment"
@@ -65,16 +54,27 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val connectivityManager = requireContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            connectivityManager.registerDefaultNetworkCallback(object : ConnectivityManager.NetworkCallback() {
+                override fun onAvailable(network: Network) {
+                    super.onAvailable(network)
+                    try {
+                        dialog.cancel()
+                    }catch (e:UninitializedPropertyAccessException){}
+                }
+                override fun onLost(network: Network) {
+                    super.onLost(network)
+                    showDialog();
+                }
+            })
+        }
+
         homeFragmentViewModel = ViewModelProvider(this,HomeFragmentViewModelFactory(requireView(),
             requireActivity())).get(HomeFragmentViewModel::class.java)
 
-        checkIfLocationIsUnderDistance(LocationDao(0.0, 0.0));
-        val preferences = requireContext().applicationContext.getSharedPreferences(
-            "notification",
-            Context.MODE_PRIVATE
-        )
-        val editor = preferences.getString(notification_Cache, null)
-        if (editor == null) workerBuilder()
+       // checkIfLocationIsUnderDistance(LocationDao(0.0, 0.0));
+
 
         homeFragmentViewModel.getLabourName{ s: String, s1: String ->
             val complete_string = getString(R.string.welcome_livespace) + " " + s.toUpperCase(Locale.ROOT)
@@ -83,7 +83,7 @@ class HomeFragment : Fragment() {
         }
 
         homeFragmentBinding.recyclerView.layoutManager = LinearLayoutManager(requireContext(),LinearLayoutManager.VERTICAL,false)
-        val addressesAdapter = AddressesAdapter(ArrayList<VendorEntity>(), requireContext())
+        val addressesAdapter = AddressesAdapter(ArrayList<VendorEntity>(), requireContext(), requireActivity())
         homeFragmentBinding.recyclerView.adapter = addressesAdapter
         homeFragmentViewModel.vendorAddressesLiveData.observe(viewLifecycleOwner){
             // init the recycler view
@@ -92,55 +92,20 @@ class HomeFragment : Fragment() {
 
     }
 
-    private fun workerBuilder() {
-        val component = ComponentName(requireContext(), NotificationService::class.java)
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+    private fun showDialog(){
+        dialog = AlertDialog.Builder(requireContext())
+            .setTitle(R.string.internet_dialog_title)
+            .setMessage(R.string.internet_dialog_message)
+            .setCancelable(false)
+            .create()
 
-            val builder = JobInfo.Builder(124, component)
-            builder.setPersisted(true)
-            builder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-            builder.setPeriodic(1000 * 60 * 15)
-
-            val scheduler =
-                requireContext().getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
-            val preferences = requireContext().applicationContext.getSharedPreferences(
-                "notification",
-                Context.MODE_PRIVATE
-            )
-            val editor = preferences.edit();
-            editor.putString(notification_Cache, "y");
-            editor.apply()
-            scheduler.schedule(builder.build())
-        }
-    }
-    private fun checkIfLocationIsUnderDistance(target: LocationDao) {
-        LocationUtils(requireActivity()).getLocationCoordinates({
-
-            val calculateLinearDistance =
-                calculateLinearDistance(it, LocationDao(target.latitude, target.longitude))
-            Log.i(
-                TAG,
-                "onViewCreated: $calculateLinearDistance  " + it.latitude + " " + it.longitude
-            )
-
-//            Toast.makeText(
-//                requireContext(),
-//                it.latitude.toString() + "," + it.longitude,
-//                Toast.LENGTH_SHORT
-//            ).show()
-        }) {
-            Log.e(TAG, "onViewCreated: ", it)
-        }
+        dialog.show()
     }
 
     override fun onResume() {
         super.onResume()
         LocationUtils(requireActivity()).getLocationCoordinates({
-//            Toast.makeText(
-//                requireContext(),
-//                it.latitude.toString() + "," + it.longitude,
-//                Toast.LENGTH_SHORT
-//            ).show()
+
         }) {
             Log.e(TAG, "onViewCreated: ", it)
         }

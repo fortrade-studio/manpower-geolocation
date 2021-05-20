@@ -1,17 +1,19 @@
 package com.fortradestudio.mapowergeolocationtracker.viewmodel.homeFragment
 
 import android.app.Activity
+import android.location.Location
 import android.util.Log
 import android.view.View
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.fortradestudio.mapowergeolocationtracker.R
+import com.fortradestudio.mapowergeolocationtracker.locationsUtils.LocationDao
+import com.fortradestudio.mapowergeolocationtracker.locationsUtils.LocationUtils
 import com.fortradestudio.mapowergeolocationtracker.retrofit.LabourEntity
 import com.fortradestudio.mapowergeolocationtracker.retrofit.RetrofitProvider
 import com.fortradestudio.mapowergeolocationtracker.retrofit.VendorEntity
-import com.fortradestudio.mapowergeolocationtracker.room.VendorAddressDatabase
-import com.fortradestudio.mapowergeolocationtracker.room.VendorAddressRepository
-import com.fortradestudio.mapowergeolocationtracker.room.VendorAddresses
+import com.fortradestudio.mapowergeolocationtracker.room.*
+import com.fortradestudio.mapowergeolocationtracker.ui.HomeFragment
 import com.fortradestudio.mapowergeolocationtracker.utils.Utils
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope
@@ -21,6 +23,7 @@ import kotlinx.coroutines.withContext
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.lang.Math.abs
 
 class HomeFragmentViewModel(
     val view: View,
@@ -63,14 +66,18 @@ class HomeFragmentViewModel(
                             Log.i(TAG, "onResponse: ${current_customer.vendorName}")
                             getVendorAddresses(
                                 current_customer.vendorName.trim(),
-                                current_customer.name.trim()
+                                current_customer.name.trim(),
+                                current_customer
                             );
 
                         } else {
-                            Snackbar.make(view, R.string.something_went_wrong, Snackbar.LENGTH_LONG)
+                            Snackbar.make(view, R.string.no_such_user_data, Snackbar.LENGTH_LONG)
                                 .show()
                         }
                     }
+                } else {
+                    Snackbar.make(view, R.string.something_went_wrong, Snackbar.LENGTH_LONG).show()
+
                 }
             }
 
@@ -84,13 +91,15 @@ class HomeFragmentViewModel(
         ioScope.launch {
             val dao = VendorAddressDatabase.getDatabase(activity).getDao()
             val repo = VendorAddressRepository(dao)
-            repo.clearTable();
-
             repo.storeAddress(*vendorAddresses)
         }
     }
 
-    public fun getVendorAddresses(vendorName: String, labourName: String) {
+    public fun getVendorAddresses(
+        vendorName: String,
+        labourName: String,
+        labourEntity: LabourEntity? = null
+    ) {
         ioScope.launch {
             val labourServiceRepository = RetrofitProvider.getLabourServiceRepository()
             labourServiceRepository.getVendorAddress().enqueue(object :
@@ -101,21 +110,56 @@ class HomeFragmentViewModel(
                 ) {
                     if (response.isSuccessful) {
 
+                        ioScope.launch {
+                            val dao = VendorAddressDatabase.getDatabase(activity).getDao()
+                            val repo = VendorAddressRepository(dao)
+                            repo.clearTable();
+                        }
+
+
                         if (response.body() != null) {
 
                             val tempList = ArrayList<VendorEntity>()
-
                             for (v in response.body()!!) {
                                 // here we will get the vendor ka address
-                                if (v.Vendor_Name.trim() == vendorName.trim()) {
+                                if (v.Vendor_Name.trim() == vendorName.trim() && poFilter(v)) {
                                     // we found our vendor yaaay
+                                    // also we need to filter those whose po is closed
+
                                     tempList.add(v)
                                     vendorAddressesLiveData.postValue(tempList)
-                                    storeAddressesInDatabase(mapVendorEntityToVendorAddress(labourName,v))
-                                    Log.i(TAG, "onResponse: ${v.Address}")
+
+                                    storeAddressesInDatabase(
+                                        mapVendorEntityToVendorAddress(
+                                            labourName,
+                                            v
+                                        )
+                                    )
                                 }
                             }
 
+                            if (tempList.isNotEmpty() && labourEntity != null) {
+                                val first: VendorEntity = tempList.first()
+                                insertUser(
+                                    User(
+                                        name = labourName.trim(),
+                                        vendorName = vendorName,
+                                        projectId = first.Project_ID,
+                                        phoneNumber = labourEntity.phNo.trim(),
+                                        category = labourEntity.category.trim(),
+                                        address = first.Address
+                                    )
+                                )
+                            }
+
+
+                        } else {
+                            Snackbar.make(
+                                view,
+                                activity.getString(R.string.no_vendor_data_found) + " $vendorName",
+                                Snackbar.LENGTH_LONG
+                            )
+                                .show()
                         }
 
                     } else {
@@ -134,7 +178,19 @@ class HomeFragmentViewModel(
     }
 
 
-    private fun mapVendorEntityToVendorAddress(
+    private fun insertUser(user: User) =
+        CoroutineScope(Dispatchers.IO).launch {
+            val dao = VendorAddressDatabase.getDatabase(activity).getUserDao()
+            val repo = UserRepository(dao)
+            repo.insertUser(user)
+        }
+
+
+    private fun poFilter(vendor: VendorEntity): Boolean {
+        return !vendor.PO_Status.trim().equals("PO Closed", true)
+    }
+
+    fun mapVendorEntityToVendorAddress(
         labourName: String,
         v: VendorEntity
     ): VendorAddresses {
@@ -148,9 +204,10 @@ class HomeFragmentViewModel(
             address = v.Address,
             vendorName = v.Vendor_Name,
             projectId = v.Project_ID,
-            latitude = 27.02,
-            longitude = 88.72
+            latitude = 29.5689061,
+            longitude = 77.7687311
         )
     }
+
 
 }

@@ -4,6 +4,7 @@
     package="com.fortradestudio.mapowergeolocationtracker">
 
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
 
@@ -23,9 +24,6 @@
             </intent-filter>
         </activity>
 
-        <!-- ADD THE FOLLOWING NODE -->
-        <service android:name=".service.NotificationService"
-                android:permission="android.permission.BIND_JOB_SERVICE"/>
 
 
     </application>

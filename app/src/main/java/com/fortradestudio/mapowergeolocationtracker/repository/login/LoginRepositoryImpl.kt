@@ -23,6 +23,12 @@ class LoginRepositoryImpl(private val activity: Activity) : LoginRepository {
 
     // here we will be sending the verification for the number
     override fun sendNumberForVerification(phoneNumber: String, verificationResult: (Int) -> Unit) {
+
+        if(phoneNumber.isEmpty()){
+            verificationResult(ERROR_CODE)
+            return;
+        }
+
         val options = PhoneAuthOptions.newBuilder(auth)
             .setPhoneNumber("+91$phoneNumber")
             .setTimeout(60L, TimeUnit.SECONDS)
@@ -49,6 +55,10 @@ class LoginRepositoryImpl(private val activity: Activity) : LoginRepository {
     }
 
     override fun verifyOTP(otp: String, onOTPVerified: (Int) -> Unit) {
+        if(otp.isEmpty() ){
+            onOTPVerified(ON_OTP_INVALID)
+            return;
+        }
         val fromCache = Utils(activity).getFromCache(verificationIdKey)
         if (fromCache != null) {
             val credential = PhoneAuthProvider.getCredential(fromCache, otp)
