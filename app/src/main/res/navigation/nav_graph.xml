@@ -45,5 +45,14 @@
         android:id="@+id/homeFragment"
         android:name="com.fortradestudio.mapowergeolocationtracker.ui.HomeFragment"
         android:label="fragment_home"
-        tools:layout="@layout/fragment_home" />
+        tools:layout="@layout/fragment_home" >
+        <action
+            android:id="@+id/action_homeFragment_to_clockFragment"
+            app:destination="@id/clockFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/clockFragment"
+        android:name="com.fortradestudio.mapowergeolocationtracker.ClockFragment"
+        android:label="fragment_clock"
+        tools:layout="@layout/fragment_clock" />
 </navigation>

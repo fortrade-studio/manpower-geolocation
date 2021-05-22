@@ -1,6 +1,7 @@
 package com.fortradestudio.mapowergeolocationtracker.room
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 
@@ -12,6 +13,9 @@ interface UserDao {
 
     @Insert
     fun insertToDatabase(user:User)
+
+    @Query("Delete from user")
+    fun deleteFromDb()
 
     @Query("Select Count(*) from user")
     fun getSize():Int

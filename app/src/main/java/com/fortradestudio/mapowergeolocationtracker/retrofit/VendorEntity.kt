@@ -15,4 +15,7 @@ data class VendorEntity(
     val Sn: String,
     @SerializedName("Vendor Name")
     val Vendor_Name: String
+
+    //{"Sn":"1","Project ID":"502995","Customer Name":"Juthika Dodle","Address":"","Lati & Longi":"17.5173854,78.4712046",
+    // "Vendor Name":"VCA Projects & Interiors Pvt Ltd","PO Status":"PO Closed"}
 )

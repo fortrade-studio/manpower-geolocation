@@ -12,6 +12,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.AppCompatButton
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.navigation.Navigation
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.fortradestudio.mapowergeolocationtracker.R
@@ -21,77 +22,112 @@ import com.fortradestudio.mapowergeolocationtracker.retrofit.VendorEntity
 import com.fortradestudio.mapowergeolocationtracker.room.*
 import com.fortradestudio.mapowergeolocationtracker.ui.HomeFragment
 import com.fortradestudio.mapowergeolocationtracker.utils.CacheUtils
+import com.fortradestudio.mapowergeolocationtracker.utils.Utils
+import com.fortradestudio.mapowergeolocationtracker.viewmodel.homeFragment.HomeFragmentViewModel
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlin.math.abs
 
 class AddressesAdapter(
-    var listOfAddress:ArrayList<VendorEntity>,
-    val context:Context,
-    val activity:Activity
+    var listOfAddress: ArrayList<VendorEntity>,
+    val context: Context,
+    val activity: Activity,
+    view: View,
+    val name: String,
+    val category:String
 ) : RecyclerView.Adapter<AddressesAdapter.AddressesViewHolder>() {
 
 
-    companion object{
+    companion object {
         private const val TAG = "AddressesAdapter"
+        private const val number_cache_key = "phoneNumber"
     }
 
     private val mainScope = CoroutineScope(Dispatchers.Main)
 
-     inner class AddressesViewHolder(val view:View) : RecyclerView.ViewHolder(view){
-         val projectIdTextView = view.findViewById<TextView>(R.id.projectIdTextView)
-         val addressTextView = view.findViewById<TextView>(R.id.addressTextView)
-         val distanceTextView = view.findViewById<TextView>(R.id.distanceTextView)
-         val cardAddress = view.findViewById<ConstraintLayout>(R.id.cardAddress)
-         val joinButton = view.findViewById<AppCompatButton>(R.id.joinButton)
-     }
+    inner class AddressesViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
+        val projectIdTextView = view.findViewById<TextView>(R.id.projectIdTextView)
+        val addressTextView = view.findViewById<TextView>(R.id.addressTextView)
+        val distanceTextView = view.findViewById<TextView>(R.id.distanceTextView)
+        val cardAddress = view.findViewById<ConstraintLayout>(R.id.cardAddress)
+        val joinButton = view.findViewById<AppCompatButton>(R.id.joinButton)
+    }
 
-    fun updateAndDispatch(newList:List<VendorEntity>){
-        val diffResult = DiffUtil.calculateDiff(AddressDiffUtils(newList,listOfAddress))
+    fun updateAndDispatch(newList: List<VendorEntity>) {
+        val diffResult = DiffUtil.calculateDiff(AddressDiffUtils(newList, listOfAddress))
         diffResult.dispatchUpdatesTo(this)
         listOfAddress = ArrayList(newList)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AddressesViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.addresses_recycler,parent,false)
+        val view =
+            LayoutInflater.from(parent.context).inflate(R.layout.addresses_recycler, parent, false)
         return AddressesViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: AddressesViewHolder, position: Int) {
 
-        with(holder){
+        with(holder) {
             val map =
                 mapVendorEntityToVendorAddress("s", listOfAddress[position])
-            checkIfLocationIsUnderDistance(
-                LocationDao(map.latitude,map.longitude)
-            ) {it,distance->
-                if(it) {
-                    projectIdTextView.text = listOfAddress[position].Project_ID
-                    addressTextView.text = listOfAddress[position].Address
-                    distanceTextView.text = distance.toDistance()
+            if (map.latitude != -1.0 || map.longitude != -1.0) {
+                checkIfLocationIsUnderDistance(
+                    LocationDao(map.latitude, map.longitude)
+                ) { it, distance ->
+                    if (it) {
+                        projectIdTextView.text = listOfAddress[position].Project_ID
+                        addressTextView.text = listOfAddress[position].Address
+                        distanceTextView.text = distance.toDistance()
 
-                    joinButton.setOnClickListener{
-                        CacheUtils(context).getUserData {
+                        joinButton.setOnClickListener {
+                            insertUser(
+                                User(
+                                    name = name.trim(),
+                                    vendorName = listOfAddress[position].Vendor_Name.trim(),
+                                    phoneNumber = Utils(activity).getFromCache(number_cache_key)!!.trim(),
+                                    projectId = listOfAddress[position].Project_ID.trim(),
+                                    category = category.trim(),
+                                    address = listOfAddress[position].Address.trim()
+                                )
+                            )
                             mainScope.launch {
-                                Toast.makeText(context, it.toString(), Toast.LENGTH_SHORT).show()
+                                Navigation.findNavController(view)
+                                    .navigate(R.id.action_homeFragment_to_clockFragment)
                             }
                         }
-                    }
 
-                }else{
-                    cardAddress.visibility=View.GONE
+                    } else {
+                        projectIdTextView.text = listOfAddress[position].Project_ID
+                        addressTextView.text = listOfAddress[position].Address
+                        distanceTextView.text = distance.toDistance()
+
+                        joinButton.visibility = View.INVISIBLE
+                    }
                 }
+            } else {
+                holder.cardAddress.visibility = View.GONE
+                Toast.makeText(context, R.string.lat_long_error, Toast.LENGTH_SHORT).show()
             }
         }
     }
 
+    private fun insertUser(user: User) =
+        CoroutineScope(Dispatchers.IO).launch {
+            val dao = VendorAddressDatabase.getDatabase(activity).getUserDao()
+            val repo = UserRepository(dao)
+            repo.deleteFromDb()
+            repo.insertUser(user)
+        }
 
-    private fun Double.toDistance():String{
-        return if(this>=1000){
+
+    private fun Double.toDistance(): String {
+        return if (this >= 1000) {
             // then the distance is in km that we have to show
-            this.div(1000).toInt().toString()+" km"
-        }else{
-            this.toInt().toString() +" m"
+            this.div(1000).toInt().toString() + " km"
+        } else {
+            this.toInt().toString() + " m"
         }
     }
 
@@ -100,32 +136,50 @@ class AddressesAdapter(
         v: VendorEntity
     ): VendorAddresses {
         val latiLongi = v.Lati_Longi
-        val split = latiLongi.split(",")
-//        val latitude = split[0]
-//        val longitude = split[1]
 
-        return VendorAddresses(
-            labourName = labourName,
-            address = v.Address,
-            vendorName = v.Vendor_Name,
-            projectId = v.Project_ID,
-            // 8 to 9 ,
-            latitude = 29.5699061,
-            longitude = 77.7697311
-        )
+        try {
+            val split = latiLongi.split(",")
+            val latitude = split[0].trim().toDouble()
+            val longitude = split[1].trim().toDouble()
+
+            return VendorAddresses(
+                labourName = labourName,
+                address = v.Address,
+                vendorName = v.Vendor_Name,
+                projectId = v.Project_ID,
+                // 8 to 9 ,
+                latitude = latitude,
+                longitude = longitude
+            )
+        } catch (e: Exception) {
+            return VendorAddresses(
+                labourName = labourName,
+                address = v.Address,
+                vendorName = v.Vendor_Name,
+                projectId = v.Project_ID,
+                // 8 to 9 ,
+                latitude = -1.0,
+                longitude = -1.0
+            )
+        }
+
     }
 
 
-    private fun checkIfLocationIsUnderDistance(target: LocationDao, onFetched:(Boolean,Double)->Unit) {
+    private fun checkIfLocationIsUnderDistance(
+        target: LocationDao,
+        onFetched: (Boolean, Double) -> Unit
+    ) {
         LocationUtils(activity = activity).getLocationCoordinates({
 
+            Log.d(TAG, "checkIfLocationIsUnderDistance: ${it.toString()}")
             val calculateLinearDistance =
                 LocationUtils.calculateLinearDistance(
                     it,
                     LocationDao(target.latitude, target.longitude)
                 )
 
-            onFetched(Math.abs(calculateLinearDistance) <=500,calculateLinearDistance)
+            onFetched(abs(calculateLinearDistance) <= 500, calculateLinearDistance)
 
         }) {
             Log.e(TAG, "onViewCreated: ", it)
@@ -133,5 +187,5 @@ class AddressesAdapter(
     }
 
 
-    override fun getItemCount(): Int  = listOfAddress.size
+    override fun getItemCount(): Int = listOfAddress.size
 }

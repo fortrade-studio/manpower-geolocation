@@ -17,10 +17,15 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.database.ktx.getValue
 import com.google.firebase.ktx.Firebase
+import java.text.SimpleDateFormat
+import java.util.*
 
 class BlockerFragment : Fragment() {
 
     private lateinit var blockerFragmentBinding: FragmentBlockerBinding
+    companion object{
+        private const val TAG = "BlockerFragment"
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -33,7 +38,6 @@ class BlockerFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
 
         val auth = FirebaseAuth.getInstance();
         val database = Firebase.database
@@ -75,6 +79,5 @@ class BlockerFragment : Fragment() {
 
 
     }
-
 
 }

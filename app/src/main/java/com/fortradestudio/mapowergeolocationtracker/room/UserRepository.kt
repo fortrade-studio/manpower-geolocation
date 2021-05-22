@@ -13,4 +13,6 @@ class UserRepository(
         }
     }
 
+    fun deleteFromDb() =dao.deleteFromDb()
+
 }

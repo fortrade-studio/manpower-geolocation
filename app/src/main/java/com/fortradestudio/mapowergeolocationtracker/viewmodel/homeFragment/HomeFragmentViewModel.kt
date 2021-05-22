@@ -41,7 +41,7 @@ class HomeFragmentViewModel(
 
     val vendorAddressesLiveData = MutableLiveData<List<VendorEntity>>()
 
-    fun getLabourName(onSuccessApiCallback: (String, String) -> Unit) {
+    fun getLabourName(onSuccessApiCallback: (String, String,String) -> Unit) {
         val labourServiceRepository = RetrofitProvider.getLabourServiceRepository()
         labourServiceRepository.getLaboursData().enqueue(object : Callback<List<LabourEntity>> {
             override fun onResponse(
@@ -60,7 +60,8 @@ class HomeFragmentViewModel(
                             mainScope.launch {
                                 onSuccessApiCallback(
                                     current_customer.name,
-                                    current_customer.vendorName
+                                    current_customer.vendorName,
+                                    current_customer.category
                                 )
                             }
                             Log.i(TAG, "onResponse: ${current_customer.vendorName}")
@@ -76,12 +77,13 @@ class HomeFragmentViewModel(
                         }
                     }
                 } else {
+                    Log.e(TAG, "onResponse: this is 80")
                     Snackbar.make(view, R.string.something_went_wrong, Snackbar.LENGTH_LONG).show()
-
                 }
             }
 
             override fun onFailure(call: Call<List<LabourEntity>>, t: Throwable) {
+                Log.e(TAG, "onFailure: ", t)
                 Snackbar.make(view, R.string.something_went_wrong, Snackbar.LENGTH_LONG).show()
             }
         })
@@ -129,29 +131,17 @@ class HomeFragmentViewModel(
                                     tempList.add(v)
                                     vendorAddressesLiveData.postValue(tempList)
 
-                                    storeAddressesInDatabase(
+                                    val mapVendorEntityToVendorAddress =
                                         mapVendorEntityToVendorAddress(
                                             labourName,
                                             v
                                         )
-                                    )
+
+                                    if(mapVendorEntityToVendorAddress.latitude!=-1.0 || mapVendorEntityToVendorAddress.longitude!=-1.0){
+                                        storeAddressesInDatabase(mapVendorEntityToVendorAddress)
+                                    }
                                 }
                             }
-
-                            if (tempList.isNotEmpty() && labourEntity != null) {
-                                val first: VendorEntity = tempList.first()
-                                insertUser(
-                                    User(
-                                        name = labourName.trim(),
-                                        vendorName = vendorName,
-                                        projectId = first.Project_ID,
-                                        phoneNumber = labourEntity.phNo.trim(),
-                                        category = labourEntity.category.trim(),
-                                        address = first.Address
-                                    )
-                                )
-                            }
-
 
                         } else {
                             Snackbar.make(
@@ -178,14 +168,6 @@ class HomeFragmentViewModel(
     }
 
 
-    private fun insertUser(user: User) =
-        CoroutineScope(Dispatchers.IO).launch {
-            val dao = VendorAddressDatabase.getDatabase(activity).getUserDao()
-            val repo = UserRepository(dao)
-            repo.insertUser(user)
-        }
-
-
     private fun poFilter(vendor: VendorEntity): Boolean {
         return !vendor.PO_Status.trim().equals("PO Closed", true)
     }
@@ -195,18 +177,32 @@ class HomeFragmentViewModel(
         v: VendorEntity
     ): VendorAddresses {
         val latiLongi = v.Lati_Longi
-        val split = latiLongi.split(",")
-//        val latitude = split[0]
-//        val longitude = split[1]
+        try {
+            val split = latiLongi.split(",")
+            val latitude = split[0].trim().toDouble()
+            val longitude = split[1].trim().toDouble()
 
-        return VendorAddresses(
-            labourName = labourName,
-            address = v.Address,
-            vendorName = v.Vendor_Name,
-            projectId = v.Project_ID,
-            latitude = 29.5689061,
-            longitude = 77.7687311
-        )
+            return VendorAddresses(
+                labourName = labourName,
+                address = v.Address,
+                vendorName = v.Vendor_Name,
+                projectId = v.Project_ID,
+                latitude = latitude,
+                longitude = longitude
+            )
+
+        }catch (e:Exception){
+
+            return VendorAddresses(
+                labourName = labourName,
+                address = v.Address,
+                vendorName = v.Vendor_Name,
+                projectId = v.Project_ID,
+                latitude = -1.0,
+                longitude = -1.0
+            )
+        }
+
     }
 
 

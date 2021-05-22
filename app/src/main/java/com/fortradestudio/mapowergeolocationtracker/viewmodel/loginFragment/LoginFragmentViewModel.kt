@@ -70,6 +70,8 @@ class LoginFragmentViewModel(
         }
     }
 
+
+
     fun showDialog() {
         val inflator = LayoutInflater.from(activity).inflate(R.layout.loading_dialog, null)
         val view = inflator.rootView

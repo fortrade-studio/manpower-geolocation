@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/frameLayout2"
+    android:background="@color/white"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.LoginFragment">
@@ -81,6 +82,8 @@
             android:id="@+id/phoneNumberEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textColor="@color/black"
+            android:textColorHint="#988C8C"
             android:hint="@string/numberEditText"
             android:inputType="phone"
             android:paddingTop="17dp"

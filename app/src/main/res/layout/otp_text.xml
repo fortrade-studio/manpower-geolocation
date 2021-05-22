@@ -11,6 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:theme="@style/h1TextView"
+        android:textColor="#706565"
         android:text="@string/no_otp_info"
         android:textSize="14sp"
         />

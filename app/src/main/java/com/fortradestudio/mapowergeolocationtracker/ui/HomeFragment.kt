@@ -76,18 +76,20 @@ class HomeFragment : Fragment() {
        // checkIfLocationIsUnderDistance(LocationDao(0.0, 0.0));
 
 
-        homeFragmentViewModel.getLabourName{ s: String, s1: String ->
+        homeFragmentViewModel.getLabourName{ s: String, s1: String , category:String ->
             val complete_string = getString(R.string.welcome_livespace) + " " + s.toUpperCase(Locale.ROOT)
             homeFragmentBinding.headerNameTextView.text=complete_string
             homeFragmentBinding.vendorNameTextView.text=s1
-        }
 
-        homeFragmentBinding.recyclerView.layoutManager = LinearLayoutManager(requireContext(),LinearLayoutManager.VERTICAL,false)
-        val addressesAdapter = AddressesAdapter(ArrayList<VendorEntity>(), requireContext(), requireActivity())
-        homeFragmentBinding.recyclerView.adapter = addressesAdapter
-        homeFragmentViewModel.vendorAddressesLiveData.observe(viewLifecycleOwner){
-            // init the recycler view
-            addressesAdapter.updateAndDispatch(it)
+
+            homeFragmentBinding.recyclerView.layoutManager = LinearLayoutManager(requireContext(),LinearLayoutManager.VERTICAL,false)
+            val addressesAdapter = AddressesAdapter(ArrayList<VendorEntity>(), requireContext(), requireActivity(),requireView(),s,category)
+            homeFragmentBinding.recyclerView.adapter = addressesAdapter
+            homeFragmentViewModel.vendorAddressesLiveData.observe(viewLifecycleOwner){
+                // init the recycler view
+                addressesAdapter.updateAndDispatch(it)
+            }
+
         }
 
     }
