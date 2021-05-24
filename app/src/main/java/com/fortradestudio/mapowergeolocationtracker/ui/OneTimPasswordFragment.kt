@@ -71,7 +71,7 @@ class OneTimPasswordFragment : Fragment() {
             }
         }
 
-        object : CountDownTimer(30000, 1000) {
+        object : CountDownTimer(60000, 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 oneTimeFragmentBinding.include2.countdown.setText("Try again after: " + millisUntilFinished / 1000 + "s")
                 oneTimeFragmentBinding.include2.resendOtp.setVisibility(View.GONE)
@@ -97,7 +97,7 @@ class OneTimPasswordFragment : Fragment() {
             Toast.makeText(activity, "OTP sent again to " + phoneNumber, Toast.LENGTH_SHORT)
                 .show()
 
-            object : CountDownTimer(30000, 1000) {
+            object : CountDownTimer(60000, 1000) {
                 override fun onTick(millisUntilFinished: Long) {
                     oneTimeFragmentBinding.include2.countdown.text = "Try again after: " + millisUntilFinished / 1000 + "s"
                     oneTimeFragmentBinding.include2.resendOtp.visibility = View.INVISIBLE
