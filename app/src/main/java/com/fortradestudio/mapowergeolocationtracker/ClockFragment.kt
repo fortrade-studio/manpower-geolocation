@@ -1,5 +1,6 @@
 package com.fortradestudio.mapowergeolocationtracker
 
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -57,7 +58,7 @@ class ClockFragment : Fragment() {
                         if (it) {
                             // upload success
                             clockFragmentViewModel.postState(2)
-                            animateClock()
+                            animateClock(false)
                             Toast.makeText(requireContext(), "Upload Success", Toast.LENGTH_SHORT)
                                 .show()
                         } else {
@@ -75,7 +76,7 @@ class ClockFragment : Fragment() {
                 clockFragmentViewBinding.clockButton.setOnClickListener {
                     clockFragmentViewModel.clockOutData({
                         clockFragmentViewModel.postState(1)
-                        animateClock()
+                        animateClock(true)
                     }) {
                         Toast.makeText(requireContext(), "Upload Failed", Toast.LENGTH_SHORT).show()
                     }
@@ -93,7 +94,7 @@ class ClockFragment : Fragment() {
                     clockFragmentViewModel.uploadData({
                         if (it) {
                             // upload success
-                                animateClock()
+                                animateClock(false)
                             Toast.makeText(requireContext(), "Upload Success", Toast.LENGTH_SHORT)
                                 .show()
                         } else {
@@ -112,7 +113,7 @@ class ClockFragment : Fragment() {
                 clockFragmentViewBinding.clockButton.text = getString(R.string.clockOutButton)
                 clockFragmentViewBinding.clockButton.setOnClickListener {
                     clockFragmentViewModel.clockOutData({
-                        animateClock()
+                        animateClock(green = true)
                     }) {
                         Toast.makeText(requireContext(), "Upload Failed", Toast.LENGTH_SHORT).show()
                     }
@@ -127,14 +128,13 @@ class ClockFragment : Fragment() {
 
     }
 
-    fun animateClock() {
+    fun animateClock(green:Boolean) {
      //   clockFragmentViewBinding.imageView2.setBackgroundResource(R.drawable.check)
-        clockFragmentViewBinding.imageView2.animate()
-            .rotationY(360F)
-            .setDuration(500)
-            .withEndAction {
-                clockFragmentViewBinding.imageView2.setBackgroundResource(R.drawable.ic_clock)
-            }
+        if(!green){
+            clockFragmentViewBinding.textClock.setTextColor(Color.RED)
+        }else{
+            clockFragmentViewBinding.textClock.setTextColor(Color.GREEN)
+        }
     }
 
 

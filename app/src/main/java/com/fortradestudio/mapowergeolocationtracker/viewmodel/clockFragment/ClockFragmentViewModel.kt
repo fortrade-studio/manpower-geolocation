@@ -11,7 +11,6 @@ import android.widget.ImageView
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.room.Update
 import androidx.vectordrawable.graphics.drawable.Animatable2Compat
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
 import com.fortradestudio.mapowergeolocationtracker.R
@@ -180,7 +179,7 @@ class ClockFragmentViewModel(
                                     if (response.body()!!.isNotEmpty()) {
                                         Log.i(TAG, "onResponse: ${response.body()!!.last()}")
                                         onResultFetched(response.body()!!.last().clockedOut == "y")
-                                    }else{
+                                    } else {
                                         onResultFetched(true)
                                     }
                                 } else {
@@ -212,7 +211,7 @@ class ClockFragmentViewModel(
             user.name,
             user.projectId,
             calculateCurrentTime,
-            "auto",
+            "21:00:00 IST",
             user.vendorName,
             calculateCurrentDate(),
             user.phoneNumber,
@@ -224,6 +223,7 @@ class ClockFragmentViewModel(
     private fun calculateCurrentTime(): String {
         val simpleTimeFormat = SimpleDateFormat("HH:mm:ss z")
         Log.i(TAG, "calculateCurrentTime: ${simpleTimeFormat.format(Date())}")
+        simpleTimeFormat.timeZone = TimeZone.getTimeZone("IST");
         return simpleTimeFormat.format(Date())
     }
 
