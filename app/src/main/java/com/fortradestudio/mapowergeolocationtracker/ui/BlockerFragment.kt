@@ -1,11 +1,14 @@
 package com.fortradestudio.mapowergeolocationtracker.ui
 
+import android.app.Activity
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.navigation.fragment.findNavController
 import com.fortradestudio.mapowergeolocationtracker.R
@@ -45,6 +48,13 @@ class BlockerFragment : Fragment() {
 
 //        Blocker key
         myRef.setValue("1234")
+        fun Context.hideKeyboard(view: View) {
+            val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+            inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+        }
+        fun Fragment.hideKeyboard() {
+            view?.let { activity?.hideKeyboard(it) }
+        }
         myRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 // This method is called once with the initial value and again
@@ -54,6 +64,7 @@ class BlockerFragment : Fragment() {
 
                 blockerFragmentBinding.startExperienceBtn.setOnClickListener {
                     val keyValue = blockerFragmentBinding.keyValue.text.toString()
+                    hideKeyboard()
 //                    key checking
                     if (value == keyValue) {
                         if (auth.currentUser != null) {
