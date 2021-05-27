@@ -54,6 +54,8 @@
     <!-- clock fragment -->
     <string name="clockOutButton">Clock Out</string>
     <string name="clockInButton">Clock In</string>
+    <string name="clocked_in">CLOCKED IN</string>
+    <string name="go_back">Go Back</string>
 
 
 </resources>

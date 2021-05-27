@@ -12,17 +12,18 @@ interface LabourServiceRepository {
     @GET(value = "https://sheetdb.io/api/v1/xm5it8ijcae7d?sheet=Project-Address-Labor Details")
     fun getVendorAddress():Call<List<VendorEntity>>
 
+    //https://sheetdb.io/api/v1/xm5it8ijcae7d?sheet=output
     //search api
-    @GET(value  = "https://sheetdb.io/api/v1/xqn6tv8ex8n97/search?sheet=output")
+    @GET(value  = "https://sheetdb.io/api/v1/xm5it8ijcae7d/search?sheet=output")
     fun checkIfUserClockedIn(@Query("phone number")ph:String ,
                              @Query("date") date:String,
                              @Query("Address") address:String):Call<List<LabourRecord>>
 
-    @POST("https://sheetdb.io/api/v1/xqn6tv8ex8n97?sheet=output")
+    @POST("https://sheetdb.io/api/v1/xm5it8ijcae7d?sheet=output")
     fun uploadClockInTime(@Body labourRecord: LabourRecord):Call<LabourRecord>;
 
 
-    @PATCH("https://sheetdb.io/api/v1/xqn6tv8ex8n97/PID/{PID}?sheet=output")
+    @PATCH("https://sheetdb.io/api/v1/xm5it8ijcae7d/PID/{PID}?sheet=output")
     fun updateUserClockOut(@Path("PID")pid:String, @Body labourUploadRecord: LabourUploadRecord):Call<LabourRecord>
 
 }

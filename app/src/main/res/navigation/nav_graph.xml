@@ -54,5 +54,21 @@
         android:id="@+id/clockFragment"
         android:name="com.fortradestudio.mapowergeolocationtracker.ClockFragment"
         android:label="fragment_clock"
-        tools:layout="@layout/fragment_clock" />
+        tools:layout="@layout/fragment_clock" >
+        <action
+            android:id="@+id/action_clockFragment_to_successFragment"
+            app:destination="@id/successFragment" />
+        <action
+            android:id="@+id/action_clockFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/successFragment"
+        android:name="com.fortradestudio.mapowergeolocationtracker.SuccessFragment"
+        android:label="fragment_success"
+        tools:layout="@layout/fragment_success" >
+        <action
+            android:id="@+id/action_successFragment_to_clockFragment"
+            app:destination="@id/clockFragment" />
+    </fragment>
 </navigation>

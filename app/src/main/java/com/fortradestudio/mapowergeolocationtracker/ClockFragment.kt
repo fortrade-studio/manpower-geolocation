@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import com.fortradestudio.mapowergeolocationtracker.databinding.FragmentClockBinding
 import com.fortradestudio.mapowergeolocationtracker.retrofit.LabourRecord
 import com.fortradestudio.mapowergeolocationtracker.room.User
@@ -31,7 +32,7 @@ class ClockFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         clockFragmentViewBinding = FragmentClockBinding.inflate(inflater, container, false)
         return clockFragmentViewBinding.root
     }
@@ -58,9 +59,13 @@ class ClockFragment : Fragment() {
                         if (it) {
                             // upload success
                             clockFragmentViewModel.postState(2)
+                            findNavController().navigate(R.id.action_clockFragment_to_successFragment)
+                        /*
                             animateClock(false)
                             Toast.makeText(requireContext(), "Upload Success", Toast.LENGTH_SHORT)
                                 .show()
+
+                             */
                         } else {
                             Toast.makeText(requireContext(), "Upload Failed", Toast.LENGTH_SHORT)
                                 .show()
@@ -76,7 +81,7 @@ class ClockFragment : Fragment() {
                 clockFragmentViewBinding.clockButton.setOnClickListener {
                     clockFragmentViewModel.clockOutData({
                         clockFragmentViewModel.postState(1)
-                        animateClock(true)
+                        findNavController().navigate(R.id.action_clockFragment_to_homeFragment)
                     }) {
                         Toast.makeText(requireContext(), "Upload Failed", Toast.LENGTH_SHORT).show()
                     }
@@ -88,13 +93,14 @@ class ClockFragment : Fragment() {
 
             if (it) {
                 // means that result don't exists -> user needs to clock In
-                Toast.makeText(context, "Please Clock In", Toast.LENGTH_SHORT).show()
                 clockFragmentViewBinding.clockButton.text = getString(R.string.clockInButton)
                 clockFragmentViewBinding.clockButton.setOnClickListener {
                     clockFragmentViewModel.uploadData({
                         if (it) {
                             // upload success
-                                animateClock(false)
+
+                            findNavController().navigate(R.id.action_clockFragment_to_successFragment)
+
                             Toast.makeText(requireContext(), "Upload Success", Toast.LENGTH_SHORT)
                                 .show()
                         } else {
@@ -109,11 +115,10 @@ class ClockFragment : Fragment() {
 
             } else {
                 // means that result exists -> user can clock out
-                Toast.makeText(context, "Please Clock Out", Toast.LENGTH_SHORT).show()
                 clockFragmentViewBinding.clockButton.text = getString(R.string.clockOutButton)
                 clockFragmentViewBinding.clockButton.setOnClickListener {
                     clockFragmentViewModel.clockOutData({
-                        animateClock(green = true)
+                        findNavController().navigate(R.id.action_clockFragment_to_homeFragment)
                     }) {
                         Toast.makeText(requireContext(), "Upload Failed", Toast.LENGTH_SHORT).show()
                     }
@@ -126,15 +131,6 @@ class ClockFragment : Fragment() {
         }
 
 
-    }
-
-    fun animateClock(green:Boolean) {
-     //   clockFragmentViewBinding.imageView2.setBackgroundResource(R.drawable.check)
-        if(!green){
-            clockFragmentViewBinding.textClock.setTextColor(Color.RED)
-        }else{
-            clockFragmentViewBinding.textClock.setTextColor(Color.GREEN)
-        }
     }
 
 
