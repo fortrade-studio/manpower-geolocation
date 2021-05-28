@@ -16,14 +16,13 @@ interface LabourServiceRepository {
     //search api
     @GET(value  = "https://sheetdb.io/api/v1/xm5it8ijcae7d/search?sheet=output")
     fun checkIfUserClockedIn(@Query("phone number")ph:String ,
-                             @Query("date") date:String,
-                             @Query("Address") address:String):Call<List<LabourRecord>>
+                             @Query("date") date:String):Call<List<LabourRecord>>
 
     @POST("https://sheetdb.io/api/v1/xm5it8ijcae7d?sheet=output")
     fun uploadClockInTime(@Body labourRecord: LabourRecord):Call<LabourRecord>;
 
 
-    @PATCH("https://sheetdb.io/api/v1/xm5it8ijcae7d/PID/{PID}?sheet=output")
-    fun updateUserClockOut(@Path("PID")pid:String, @Body labourUploadRecord: LabourUploadRecord):Call<LabourRecord>
+    @PATCH("https://sheetdb.io/api/v1/xm5it8ijcae7d/UPLI/{UPLI}?sheet=output")
+    fun updateUserClockOut(@Path("UPLI")upli:String, @Body labourUploadRecord: LabourUploadRecord):Call<LabourRecord>
 
 }

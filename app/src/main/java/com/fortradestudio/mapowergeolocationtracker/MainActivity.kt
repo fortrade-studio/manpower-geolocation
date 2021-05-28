@@ -15,9 +15,12 @@ import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.fortradestudio.mapowergeolocationtracker.ui.HomeFragment
+import com.fortradestudio.mapowergeolocationtracker.viewmodel.clockFragment.ClockFragmentViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.dialog.MaterialDialogs
 import com.permissionx.guolindev.PermissionX
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 class MainActivity : AppCompatActivity() {

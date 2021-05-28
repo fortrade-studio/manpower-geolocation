@@ -14,6 +14,7 @@ import androidx.lifecycle.ViewModel
 import androidx.vectordrawable.graphics.drawable.Animatable2Compat
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
 import com.fortradestudio.mapowergeolocationtracker.R
+import com.fortradestudio.mapowergeolocationtracker.Time
 import com.fortradestudio.mapowergeolocationtracker.retrofit.LabourRecord
 import com.fortradestudio.mapowergeolocationtracker.retrofit.LabourUploadRecord
 import com.fortradestudio.mapowergeolocationtracker.retrofit.RetrofitProvider
@@ -28,6 +29,7 @@ import retrofit2.Callback
 import retrofit2.Response
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
 
 class ClockFragmentViewModel(
     private val activity: Activity,
@@ -51,13 +53,28 @@ class ClockFragmentViewModel(
 
     val ioScope = CoroutineScope(Dispatchers.IO)
     lateinit var dialog: AlertDialog
+    var laboursList:ArrayList<LabourRecord> = ArrayList();
 
-    // onuplaod(true)-> means data uploaded successfully
-    // onuplaod(false)-> means data uploaded un_successfully
+    // on upload(true)-> means data uploaded successfully
+    // on upload(false)-> means data uploaded un_successfully
     fun uploadData(onUpload: (Boolean) -> Unit, onFailureError: (Throwable) -> Unit) {
 
         CacheUtils(activity).getUserData {
             val labourServiceRepository = RetrofitProvider.getLabourServiceRepository()
+
+            if (laboursList.isNotEmpty()) {
+                for (record in laboursList) {
+                    if(record.Address.trim()!=it.address.trim() && record.clockedOut.trim()!="y" && record.Time_out=="21:00:00"){
+                        ioScope.launch {
+                            // here we update the time out of all the others entries that weren't clocked out
+                            clockOutData({},calculateCurrentTime(),User(
+                                name = record.Labor_Name,vendorName = record.Vendor_Name,phoneNumber = record.phNo,
+                                projectId = record.PID,category = record.Category,address = record.Address
+                            ),{})
+                        }
+                    }
+                }
+            }
 
             labourServiceRepository.uploadClockInTime(mapUserToLabourRecord(it))
                 .enqueue(object : retrofit2.Callback<LabourRecord> {
@@ -80,13 +97,20 @@ class ClockFragmentViewModel(
         }
     }
 
-    fun clockOutData(onSuccessFullClockedOut: () -> Unit, onFailure: () -> Unit) {
+    fun clockOutData(onSuccessFullClockedOut: () -> Unit,time:String=calculateCurrentTime(),user:User?=null, onFailure: () -> Unit) {
         // before clock out we need to check if user previously clocked in
         CacheUtils(activity).getUserData {
             val labourServiceRepository = RetrofitProvider.getLabourServiceRepository()
+
+            val defaultUpl = if(user==null){
+                generateUPLI(it).trim()
+            }else{
+                generateUPLI(user).trim()
+            }
+
             labourServiceRepository.updateUserClockOut(
-                it.projectId.trim(),
-                LabourUploadRecord(calculateCurrentTime(), "y")
+                defaultUpl,
+                LabourUploadRecord(time, "y")
             ).enqueue(object : Callback<LabourRecord> {
                 override fun onResponse(
                     call: Call<LabourRecord>,
@@ -165,8 +189,7 @@ class ClockFragmentViewModel(
                 val labourServiceRepository = RetrofitProvider.getLabourServiceRepository()
                 labourServiceRepository.checkIfUserClockedIn(
                     it.phoneNumber,
-                    calculateCurrentDate(),
-                    it.address
+                    calculateCurrentDate()
                 ).enqueue(
                     object : Callback<List<LabourRecord>> {
                         override fun onResponse(
@@ -177,8 +200,26 @@ class ClockFragmentViewModel(
                             if (response.isSuccessful) {
                                 if (response.body() != null) {
                                     if (response.body()!!.isNotEmpty()) {
-                                        Log.i(TAG, "onResponse: ${response.body()!!.last()}")
-                                        onResultFetched(response.body()!!.last().clockedOut == "y")
+
+                                        // here we have the all data for the user this date
+                                        laboursList.addAll(response.body()!!)
+                                        Log.i(TAG, "onResponse: ${laboursList.toString()}")
+
+                                        // we will filter via address here
+                                        val filter = response.body()!!.filter { labour ->
+                                            labour.Address.trim() == it.address.trim()
+                                        }
+
+                                        if (filter.isNotEmpty()) {
+                                            // we don't have any addresses matched us
+                                            Log.i(TAG, "onResponse: ${response.body()!!.last()}")
+                                            onResultFetched(
+                                                response.body()!!.last().clockedOut == "y"
+                                            )
+                                        } else {
+                                            onResultFetched(true)
+                                        }
+
                                     } else {
                                         onResultFetched(true)
                                     }
@@ -205,26 +246,35 @@ class ClockFragmentViewModel(
 
     private fun mapUserToLabourRecord(user: User, update: String = "n"): LabourRecord {
         val calculateCurrentTime:String = calculateCurrentTime()
+        val upld = user.phoneNumber.trim()+":"+calculateDateUniqueNumber()+":"+user.projectId.trim()
         return LabourRecord(
             user.address,
             user.category,
             user.name,
             user.projectId,
             calculateCurrentTime,
-            "21:00:00 IST",
+            "21:00:00",
             user.vendorName,
             calculateCurrentDate(),
             user.phoneNumber,
-            update
+            update,
+            upld
         )
+    }
+
+    private fun calculateDateUniqueNumber():Int{
+        val month = calculateCurrentDate().split(".")[1].trim().toInt()
+        val date = calculateCurrentDate().split(".")[2].trim().toInt()
+        return (month-1).times(30) + date
+    }
+
+    private fun generateUPLI(user: User):String{
+        return user.phoneNumber.trim()+":"+calculateDateUniqueNumber()+":"+user.projectId.trim();
     }
 
 
     private fun calculateCurrentTime(): String {
-        val simpleTimeFormat = SimpleDateFormat("HH:mm:ss z")
-        Log.i(TAG, "calculateCurrentTime: ${simpleTimeFormat.format(Date())}")
-        simpleTimeFormat.timeZone = TimeZone.getTimeZone("IST");
-        return simpleTimeFormat.format(Date())
+        return Time().calculateTime().split(",")[1].replace("IST","").trim();
     }
 
     private fun calculateCurrentDate(): String {
