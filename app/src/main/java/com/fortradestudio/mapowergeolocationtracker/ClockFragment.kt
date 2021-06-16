@@ -14,16 +14,18 @@ import com.fortradestudio.mapowergeolocationtracker.databinding.FragmentClockBin
 import com.fortradestudio.mapowergeolocationtracker.retrofit.LabourRecord
 import com.fortradestudio.mapowergeolocationtracker.room.User
 import com.fortradestudio.mapowergeolocationtracker.utils.CacheUtils
+import com.fortradestudio.mapowergeolocationtracker.utils.ErrorUtils
 import com.fortradestudio.mapowergeolocationtracker.viewmodel.clockFragment.ClockFragmentViewModel
 import com.fortradestudio.mapowergeolocationtracker.viewmodel.clockFragment.ClockFragmentViewModelFactory
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.snackbar.Snackbar
 import java.text.SimpleDateFormat
 import java.util.*
 
-class ClockFragment : Fragment() {
+class ClockFragment : Fragment(){
 
     lateinit var clockFragmentViewModel: ClockFragmentViewModel
     lateinit var clockFragmentViewBinding: FragmentClockBinding
-
 
     companion object {
         private const val TAG = "ClockFragment"
@@ -40,6 +42,7 @@ class ClockFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
 
         clockFragmentViewModel = ViewModelProvider(
             this, ClockFragmentViewModelFactory(
@@ -127,11 +130,14 @@ class ClockFragment : Fragment() {
             }
 
         }) {
-            Log.e(TAG, "onViewCreated: ", it)
+            if (it != null) {
+                ErrorUtils().report(it)
+                Snackbar.make(requireView(),R.string.clockError,Snackbar.LENGTH_LONG)
+                    .show()
+            }
         }
 
 
     }
-
 
 }

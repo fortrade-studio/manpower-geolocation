@@ -6,5 +6,7 @@ data class LabourUploadRecord(
     @SerializedName("Time out")
     val Time_out: String,
     @SerializedName("clocked out")
-    val clockedOut:String
+    val clockedOut:String,
+    @SerializedName("UPLI")
+    val upli:String
 )

@@ -9,12 +9,13 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import com.fortradestudio.mapowergeolocationtracker.R
 import com.fortradestudio.mapowergeolocationtracker.databinding.FragmentLoginBinding
+import com.fortradestudio.mapowergeolocationtracker.utils.ErrorUtils
 import com.fortradestudio.mapowergeolocationtracker.viewmodel.SharedViewModel
 import com.fortradestudio.mapowergeolocationtracker.viewmodel.loginFragment.LoginFragmentViewModel
 import com.fortradestudio.mapowergeolocationtracker.viewmodel.loginFragment.LoginFragmentViewModelFactory
 
 
-class LoginFragment : Fragment() {
+class LoginFragment : Fragment() , Thread.UncaughtExceptionHandler{
 
     companion object {
         private const val TAG = "LoginFragment"
@@ -39,6 +40,9 @@ class LoginFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        Thread.setDefaultUncaughtExceptionHandler(this)
+
         loginFragmentViewModel =
             ViewModelProvider(
                 this,
@@ -62,6 +66,11 @@ class LoginFragment : Fragment() {
                 }
             }
         }
+    }
+
+    override fun uncaughtException(t: Thread, e: Throwable) {
+
+        ErrorUtils().report(e)
     }
 }
 

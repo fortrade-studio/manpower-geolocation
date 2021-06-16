@@ -1,13 +1,21 @@
 package com.fortradestudio.mapowergeolocationtracker.retrofit
 
+import com.squareup.okhttp.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.security.SecureRandom
+import java.security.cert.X509Certificate
+import javax.net.ssl.HostnameVerifier
+import javax.net.ssl.SSLContext
+import javax.net.ssl.SSLSocketFactory
+import javax.net.ssl.TrustManager
+import javax.net.ssl.X509TrustManager
 
 
 class RetrofitProvider {
 
     companion object{
-       private const val  BASE_URL ="https://sheetdb.io/api/v1/xm5it8ijcae7d/"
+       private const val  BASE_URL ="https://sheetdb.io/api/v1/64g4hny4uaim8/"
        private var labourService : LabourServiceRepository? =null
 
 

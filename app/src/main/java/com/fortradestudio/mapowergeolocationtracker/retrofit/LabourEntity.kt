@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName
 data class LabourEntity(
     @SerializedName("Category")
     var category: String,
-    @SerializedName("Name")
+    @SerializedName("Manpower")
     var name: String,
     @SerializedName("Ph No")
     var phNo: String,

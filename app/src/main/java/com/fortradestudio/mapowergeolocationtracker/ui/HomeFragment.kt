@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.fortradestudio.mapowergeolocationtracker.R
@@ -19,16 +20,20 @@ import com.fortradestudio.mapowergeolocationtracker.locationsUtils.LocationUtils
 import com.fortradestudio.mapowergeolocationtracker.locationsUtils.LocationUtils.Companion.calculateLinearDistance
 import com.fortradestudio.mapowergeolocationtracker.recyclerAdapter.AddressesAdapter
 import com.fortradestudio.mapowergeolocationtracker.retrofit.VendorEntity
+import com.fortradestudio.mapowergeolocationtracker.utils.ErrorUtils
 import com.fortradestudio.mapowergeolocationtracker.viewmodel.homeFragment.HomeFragmentViewModel
 import com.fortradestudio.mapowergeolocationtracker.viewmodel.homeFragment.HomeFragmentViewModelFactory
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.lang.Math.abs
+import java.lang.NullPointerException
 import java.util.*
 import kotlin.collections.ArrayList
 
 
-class HomeFragment : Fragment() {
+class HomeFragment : Fragment() , Thread.UncaughtExceptionHandler{
 
     lateinit var homeFragmentBinding : FragmentHomeBinding
     lateinit var homeFragmentViewModel : HomeFragmentViewModel
@@ -53,6 +58,8 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        Thread.setDefaultUncaughtExceptionHandler(this)
 
         val connectivityManager = requireContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
@@ -106,11 +113,16 @@ class HomeFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        LocationUtils(requireActivity()).getLocationCoordinates({
-
-        }) {
+        LocationUtils(requireActivity()).getLocationCoordinates({}) {
             Log.e(TAG, "onViewCreated: ", it)
         }
     }
 
+    override fun uncaughtException(t: Thread, e: Throwable) {
+        if(e.toString() == "java.lang.NullPointerException: null cannot be cast to non-null type kotlin.CharSequence"){ }
+        else{
+            ErrorUtils().report(e)
+        }
+
+    }
 }

@@ -27,6 +27,7 @@ import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
@@ -53,7 +54,7 @@ class ClockFragmentViewModel(
 
     val ioScope = CoroutineScope(Dispatchers.IO)
     lateinit var dialog: AlertDialog
-    var laboursList:ArrayList<LabourRecord> = ArrayList();
+    var laboursList: ArrayList<LabourRecord> = ArrayList();
 
     // on upload(true)-> means data uploaded successfully
     // on upload(false)-> means data uploaded un_successfully
@@ -64,13 +65,17 @@ class ClockFragmentViewModel(
 
             if (laboursList.isNotEmpty()) {
                 for (record in laboursList) {
-                    if(record.Address.trim()!=it.address.trim() && record.clockedOut.trim()!="y" && record.Time_out=="21:00:00"){
+                    if (record.Address.trim() != it.address.trim() && record.clockedOut.trim() != "y" && record.Time_out == "21:00:00") {
                         ioScope.launch {
                             // here we update the time out of all the others entries that weren't clocked out
-                            clockOutData({},calculateCurrentTime(),User(
-                                name = record.Labor_Name,vendorName = record.Vendor_Name,phoneNumber = record.phNo,
-                                projectId = record.PID,category = record.Category,address = record.Address
-                            ),{})
+                            clockOutData({}, calculateCurrentTime(), User(
+                                name = record.Labor_Name,
+                                vendorName = record.Vendor_Name,
+                                phoneNumber = record.phNo,
+                                projectId = record.PID,
+                                category = record.Category,
+                                address = record.Address
+                            ), {})
                         }
                     }
                 }
@@ -97,20 +102,26 @@ class ClockFragmentViewModel(
         }
     }
 
-    fun clockOutData(onSuccessFullClockedOut: () -> Unit,time:String=calculateCurrentTime(),user:User?=null, onFailure: () -> Unit) {
+    fun clockOutData(
+        onSuccessFullClockedOut: () -> Unit,
+        time: String = calculateCurrentTime(),
+        user: User? = null,
+        onFailure: () -> Unit
+    ) {
         // before clock out we need to check if user previously clocked in
         CacheUtils(activity).getUserData {
             val labourServiceRepository = RetrofitProvider.getLabourServiceRepository()
 
-            val defaultUpl = if(user==null){
+            val defaultUpl = if (user == null) {
                 generateUPLI(it).trim()
-            }else{
+            } else {
                 generateUPLI(user).trim()
             }
 
             labourServiceRepository.updateUserClockOut(
                 defaultUpl,
-                LabourUploadRecord(time, "y")
+                // when we update we also update the upli
+                LabourUploadRecord(time, "y", "")
             ).enqueue(object : Callback<LabourRecord> {
                 override fun onResponse(
                     call: Call<LabourRecord>,
@@ -224,11 +235,12 @@ class ClockFragmentViewModel(
                                         onResultFetched(true)
                                     }
                                 } else {
+                                    Log.i(TAG, "onResponse: ${response.body()}")
                                     onError(null);
                                 }
                             } else {
-
-                                onError(null);
+                                Log.i(TAG, "onResponse: ${response.body()}")
+                                onError(null)
                             }
                         }
 
@@ -245,8 +257,9 @@ class ClockFragmentViewModel(
     }
 
     private fun mapUserToLabourRecord(user: User, update: String = "n"): LabourRecord {
-        val calculateCurrentTime:String = calculateCurrentTime()
-        val upld = user.phoneNumber.trim()+":"+calculateDateUniqueNumber()+":"+user.projectId.trim()
+        val calculateCurrentTime: String = calculateCurrentTime()
+        val upld =
+            user.phoneNumber.trim() + ":" + calculateDateUniqueNumber() + ":" + user.projectId.trim()
         return LabourRecord(
             user.address,
             user.category,
@@ -262,19 +275,57 @@ class ClockFragmentViewModel(
         )
     }
 
-    private fun calculateDateUniqueNumber():Int{
+    private fun calculateDateUniqueNumber(): Int {
         val month = calculateCurrentDate().split(".")[1].trim().toInt()
         val date = calculateCurrentDate().split(".")[2].trim().toInt()
-        return (month-1).times(30) + date
+        return (month - 1).times(30) + date
     }
 
-    private fun generateUPLI(user: User):String{
-        return user.phoneNumber.trim()+":"+calculateDateUniqueNumber()+":"+user.projectId.trim();
+    private fun generateUPLI(user: User): String {
+        return user.phoneNumber.trim() + ":" + calculateDateUniqueNumber() + ":" + user.projectId.trim();
     }
 
 
     private fun calculateCurrentTime(): String {
-        return Time().calculateTime().split(",")[1].replace("IST","").trim();
+        return if (!Time().calculateTime().contains("GMT", ignoreCase = true)) {
+            Time().calculateTime().split(",")[1]
+                .replace("IST", "").trim();
+        } else {
+             try {
+                 Time().calculateTime()
+                     .substringBefore("GMT")
+                     .trim()
+                     .take(5)
+                     .calculateIst()
+             }catch (e:Exception){
+                 Time().calculateTime().split(",")[1]
+                     .replace("IST", "").trim();
+             }
+        }
+    }
+
+    private fun String.calculateIst():String{
+        // we need to add 5 : 30 to them
+
+        val split = this.split(":")
+
+        val mins = split[1].toInt()
+        val hrs = split[0].toInt()
+        val sec=this.takeLast(2)
+
+        var carry = 0 ;
+        var istMins = mins + 30
+        if(istMins >= 60) {
+            istMins = istMins.minus(60)
+            carry = 1;
+        }
+
+        var istHrs = hrs + 5+carry;
+        if(istHrs >=24){
+            istHrs = istHrs.minus(24)
+        }
+
+        return "$istHrs:$istMins$sec"
     }
 
     private fun calculateCurrentDate(): String {

@@ -10,6 +10,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.navigation.Navigation
 import androidx.vectordrawable.graphics.drawable.Animatable2Compat
@@ -20,6 +21,7 @@ import com.fortradestudio.mapowergeolocationtracker.repository.login.LoginReposi
 import com.fortradestudio.mapowergeolocationtracker.repository.login.LoginRepositoryImpl
 import com.fortradestudio.mapowergeolocationtracker.utils.Utils
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -59,6 +61,10 @@ class LoginFragmentViewModel(
                     dialog.cancel()
                     Navigation.findNavController(view)
                         .navigate(R.id.action_loginFragment_to_oneTimPasswordFragment)
+                }
+                -1->{
+                    dialog.cancel()
+                    Snackbar.make(view,R.string.tooManyRequest,Snackbar.LENGTH_LONG).show()
                 }
                 1 -> {
                     Log.i(TAG, "sendNumberForOTP: $it")

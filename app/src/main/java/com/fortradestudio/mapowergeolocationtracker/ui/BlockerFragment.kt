@@ -13,17 +13,16 @@ import android.widget.Toast
 import androidx.navigation.fragment.findNavController
 import com.fortradestudio.mapowergeolocationtracker.R
 import com.fortradestudio.mapowergeolocationtracker.databinding.FragmentBlockerBinding
+import com.fortradestudio.mapowergeolocationtracker.utils.ErrorUtils
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.google.firebase.database.ktx.database
-import com.google.firebase.database.ktx.getValue
-import com.google.firebase.ktx.Firebase
 import java.text.SimpleDateFormat
 import java.util.*
 
-class BlockerFragment : Fragment() {
+class BlockerFragment : Fragment() , Thread.UncaughtExceptionHandler{
 
     private lateinit var blockerFragmentBinding: FragmentBlockerBinding
     companion object{
@@ -42,8 +41,11 @@ class BlockerFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+
+        Thread.setDefaultUncaughtExceptionHandler(this)
+
         val auth = FirebaseAuth.getInstance();
-        val database = Firebase.database
+        val database = FirebaseDatabase.getInstance()
         val myRef = database.getReference("key")
 
 //        Blocker key
@@ -59,7 +61,7 @@ class BlockerFragment : Fragment() {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 // This method is called once with the initial value and again
                 // whenever data at this location is updated.
-                val value = dataSnapshot.getValue<String>()
+                val value = dataSnapshot.getValue()
 //                Log.d("key", "Value is: $value")
 
                 blockerFragmentBinding.startExperienceBtn.setOnClickListener {
@@ -89,6 +91,10 @@ class BlockerFragment : Fragment() {
         })
 
 
+    }
+
+    override fun uncaughtException(t: Thread, e: Throwable) {
+        ErrorUtils().report(e)
     }
 
 }

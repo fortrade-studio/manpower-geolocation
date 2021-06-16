@@ -15,7 +15,7 @@ data class LabourRecord(
     @SerializedName("Vendor Name")
     val Vendor_Name: String,
     val date: String,
-    @SerializedName("phone number")
+    @SerializedName("Phone number")
     val phNo:String,
     @SerializedName("clocked out")
     val clockedOut:String,

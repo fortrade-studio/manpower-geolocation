@@ -11,6 +11,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import com.fortradestudio.mapowergeolocationtracker.R
 import com.fortradestudio.mapowergeolocationtracker.databinding.FragmentOneTimPasswordBinding
+import com.fortradestudio.mapowergeolocationtracker.utils.ErrorUtils
 import com.fortradestudio.mapowergeolocationtracker.utils.Utils
 import com.fortradestudio.mapowergeolocationtracker.viewmodel.SharedViewModel
 import com.fortradestudio.mapowergeolocationtracker.viewmodel.loginFragment.LoginFragmentViewModel
@@ -21,7 +22,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 
-class OneTimPasswordFragment : Fragment() {
+class OneTimPasswordFragment : Fragment() , Thread.UncaughtExceptionHandler {
 
     companion object {
         private const val TAG = "OneTimPasswordFragment"
@@ -44,6 +45,9 @@ class OneTimPasswordFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        Thread.setDefaultUncaughtExceptionHandler(this)
+
         oneTimePassViewModel = ViewModelProvider(
             this,
             OneTimePassViewModelFactory(requireActivity(), requireView())
@@ -111,6 +115,10 @@ class OneTimPasswordFragment : Fragment() {
         }
 
 
+    }
+
+    override fun uncaughtException(t: Thread, e: Throwable) {
+        ErrorUtils()
     }
 
 
