@@ -2,9 +2,8 @@ package com.fortradestudio.mapowergeolocationtracker.utils
 
 import android.app.Activity
 import android.content.Context
-import android.content.SharedPreferences
-import android.preference.PreferenceManager
-import java.util.prefs.PreferenceChangeEvent
+import android.location.Address
+import android.location.Geocoder
 
 class Utils(private val activity: Activity) {
 
@@ -33,6 +32,16 @@ class Utils(private val activity: Activity) {
     fun getFromCache(key: String,context: Context):Boolean?{
         val preferences = context.getSharedPreferences(verifyPreference,Context.MODE_PRIVATE)
         return preferences.getBoolean(key,false);
+    }
+
+    fun getLocationFromAddress(add : String):Address?{
+        val coder = Geocoder(activity)
+        val p1 = null
+        val address = coder.getFromLocationName(add,5)
+        if( address.isEmpty()){
+            return null
+        }
+        return address[0]
     }
 
 }

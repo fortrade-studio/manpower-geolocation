@@ -8,6 +8,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -24,13 +25,14 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
+
 
 class ClockFragmentViewModel(
     private val activity: Activity,
@@ -223,6 +225,7 @@ class ClockFragmentViewModel(
 
                                         if (filter.isNotEmpty()) {
                                             // we don't have any addresses matched us
+
                                             Log.i(TAG, "onResponse: ${response.body()!!.last()}")
                                             onResultFetched(
                                                 response.body()!!.last().clockedOut == "y"
@@ -235,11 +238,11 @@ class ClockFragmentViewModel(
                                         onResultFetched(true)
                                     }
                                 } else {
-                                    Log.i(TAG, "onResponse: ${response.body()}")
+                                    Log.i(TAG, "238 onResponse: ${response.body()}")
                                     onError(null);
                                 }
                             } else {
-                                Log.i(TAG, "onResponse: ${response.body()}")
+                                Log.i(TAG, "onResponse: 245")
                                 onError(null)
                             }
                         }
@@ -266,7 +269,7 @@ class ClockFragmentViewModel(
             user.name,
             user.projectId,
             calculateCurrentTime,
-            "21:00:00",
+            "19:00:00",
             user.vendorName,
             calculateCurrentDate(),
             user.phoneNumber,
@@ -288,45 +291,26 @@ class ClockFragmentViewModel(
 
     private fun calculateCurrentTime(): String {
         return if (!Time().calculateTime().contains("GMT", ignoreCase = true)) {
+            Log.i(TAG, "calculateCurrentTime: line 291")
             Time().calculateTime().split(",")[1]
                 .replace("IST", "").trim();
         } else {
-             try {
+//             try {
+                 Log.i(TAG, "calculateCurrentTime: ${Time().calculateTime()}")
                  Time().calculateTime()
+                     .substringAfter(",")
+                     .trim()
                      .substringBefore("GMT")
                      .trim()
-                     .take(5)
-                     .calculateIst()
-             }catch (e:Exception){
-                 Time().calculateTime().split(",")[1]
-                     .replace("IST", "").trim();
-             }
+
+//             }catch (e:Exception){
+//                 Log.i(TAG, "calculateCurrentTime: line 304")
+//                 Time().calculateTime().split(",")[1]
+//                     .replace("IST", "").trim();
+//             }
         }
     }
 
-    private fun String.calculateIst():String{
-        // we need to add 5 : 30 to them
-
-        val split = this.split(":")
-
-        val mins = split[1].toInt()
-        val hrs = split[0].toInt()
-        val sec=this.takeLast(2)
-
-        var carry = 0 ;
-        var istMins = mins + 30
-        if(istMins >= 60) {
-            istMins = istMins.minus(60)
-            carry = 1;
-        }
-
-        var istHrs = hrs + 5+carry;
-        if(istHrs >=24){
-            istHrs = istHrs.minus(24)
-        }
-
-        return "$istHrs:$istMins$sec"
-    }
 
     private fun calculateCurrentDate(): String {
         val simpleDateFormat = SimpleDateFormat("yyyy.MM.dd", Locale.getDefault())

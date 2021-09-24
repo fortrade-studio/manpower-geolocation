@@ -12,6 +12,8 @@ data class LabourEntity(
     @SerializedName("Sn")
     var sn: String,
     @SerializedName("Vendor Name")
-    var vendorName : String
+    var vendorName : String,
+    @SerializedName("Project Id")
+    var projectId:String,
 ){
 }

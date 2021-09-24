@@ -21,12 +21,14 @@ import com.fortradestudio.mapowergeolocationtracker.locationsUtils.LocationUtils
 import com.fortradestudio.mapowergeolocationtracker.recyclerAdapter.AddressesAdapter
 import com.fortradestudio.mapowergeolocationtracker.retrofit.VendorEntity
 import com.fortradestudio.mapowergeolocationtracker.utils.ErrorUtils
+import com.fortradestudio.mapowergeolocationtracker.utils.Utils
 import com.fortradestudio.mapowergeolocationtracker.viewmodel.homeFragment.HomeFragmentViewModel
 import com.fortradestudio.mapowergeolocationtracker.viewmodel.homeFragment.HomeFragmentViewModelFactory
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import okhttp3.internal.Util
 import java.lang.Math.abs
 import java.lang.NullPointerException
 import java.util.*
@@ -56,6 +58,7 @@ class HomeFragment : Fragment() , Thread.UncaughtExceptionHandler{
         return homeFragmentBinding.root
     }
 
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -79,9 +82,6 @@ class HomeFragment : Fragment() , Thread.UncaughtExceptionHandler{
 
         homeFragmentViewModel = ViewModelProvider(this,HomeFragmentViewModelFactory(requireView(),
             requireActivity())).get(HomeFragmentViewModel::class.java)
-
-       // checkIfLocationIsUnderDistance(LocationDao(0.0, 0.0));
-
 
         homeFragmentViewModel.getLabourName{ s: String, s1: String , category:String ->
             val complete_string = getString(R.string.welcome_livespace) + " " + s.toUpperCase(Locale.ROOT)

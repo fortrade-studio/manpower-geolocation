@@ -12,9 +12,8 @@ Errors :
     at com.fortradestudio.mapowergeolocationtracker.viewmodel.clockFragment.ClockFragmentViewModel$filterClockInOrClockOut$1$1.invoke(Unknown Source:2)	
     at com.fortradestudio.mapowergeolocationtracker.viewmodel.clockFragment.ClockFragmentViewModel$filterClockInOrClockOut$1$1.invoke(ClockFragmentViewModel.kt:34)	
     at com.fortradestudio.mapowergeolocationtracker.utils.CacheUtils$getUserData$1.invokeSuspend(CacheUtils.kt:21)	
-    at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)	
     at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:106)	
     at kotlinx.coroutines.scheduling.CoroutineScheduler.runSafely(CoroutineScheduler.kt:571)	
     at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.executeTask(CoroutineScheduler.kt:738)	
     at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.runWorker(CoroutineScheduler.kt:678)	
-at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.run(CoroutineScheduler.kt:665)
+at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.run(CoroutineScheduler.kt:665W

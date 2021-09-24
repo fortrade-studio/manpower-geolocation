@@ -22,6 +22,7 @@ import com.fortradestudio.mapowergeolocationtracker.retrofit.VendorEntity
 import com.fortradestudio.mapowergeolocationtracker.room.*
 import com.fortradestudio.mapowergeolocationtracker.ui.HomeFragment
 import com.fortradestudio.mapowergeolocationtracker.utils.CacheUtils
+import com.fortradestudio.mapowergeolocationtracker.utils.ErrorUtils
 import com.fortradestudio.mapowergeolocationtracker.utils.Utils
 import com.fortradestudio.mapowergeolocationtracker.viewmodel.homeFragment.HomeFragmentViewModel
 import com.google.android.material.snackbar.Snackbar
@@ -80,7 +81,7 @@ class AddressesAdapter(
                         projectIdTextView.text = listOfAddress[position].Project_ID
                         addressTextView.text = listOfAddress[position].Address
                         distanceTextView.text = distance.toDistance()
-
+                        joinButton.visibility = View.VISIBLE
                         joinButton.setOnClickListener {
                             insertUser(
                                 User(
@@ -135,12 +136,14 @@ class AddressesAdapter(
         labourName: String,
         v: VendorEntity
     ): VendorAddresses {
-        val latiLongi = v.Lati_Longi
-
+        val latiLongi = Utils(activity).getLocationFromAddress(v.Address)
+        if(latiLongi == null){
+            throw NullPointerException()
+        }
         try {
-            val split = latiLongi.split(",")
-            val latitude = split[0].trim().toDouble()
-            val longitude = split[1].trim().toDouble()
+            val latitude = latiLongi.latitude
+            val longitude = latiLongi.longitude
+
 
             return VendorAddresses(
                 labourName = labourName,
@@ -183,6 +186,8 @@ class AddressesAdapter(
 
         }) {
             Log.e(TAG, "onViewCreated: ", it)
+            Toast.makeText(context,it.localizedMessage,Toast.LENGTH_LONG).show()
+            ErrorUtils().report(it)
         }
     }
 

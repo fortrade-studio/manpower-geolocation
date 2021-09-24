@@ -16,6 +16,7 @@ import com.fortradestudio.mapowergeolocationtracker.room.*
 import com.fortradestudio.mapowergeolocationtracker.ui.HomeFragment
 import com.fortradestudio.mapowergeolocationtracker.utils.Utils
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -49,7 +50,9 @@ class HomeFragmentViewModel(
                 response: Response<List<LabourEntity>>
             ) {
                 if (response.isSuccessful) {
-                    val fromCache = Utils(activity).getFromCache(number_cache_key)
+                    Log.i(TAG, "onResponse: success")
+                    val fromCache =
+                        FirebaseAuth.getInstance().currentUser?.phoneNumber?.removePrefix("+91")
                     if (fromCache != null) {
                         val current_customer: LabourEntity? = response.body()?.find {
                             it.phNo.trim() == fromCache.trim()
@@ -68,10 +71,11 @@ class HomeFragmentViewModel(
                             getVendorAddresses(
                                 current_customer.vendorName.trim(),
                                 current_customer.name.trim(),
-                                current_customer
+                                current_customer.projectId
                             );
 
                         } else {
+                            Log.i(TAG, "onResponse: 77")
                             Snackbar.make(view, R.string.no_such_user_data, Snackbar.LENGTH_LONG)
                                 .show()
                         }
@@ -97,9 +101,11 @@ class HomeFragmentViewModel(
         }
     }
 
+    // we need to filter out according to the vendor registered for the user
     public fun getVendorAddresses(
         vendorName: String,
         labourName: String,
+        projectId:String,
         labourEntity: LabourEntity? = null
     ) {
         ioScope.launch {
@@ -124,7 +130,8 @@ class HomeFragmentViewModel(
                             val tempList = ArrayList<VendorEntity>()
                             for (v in response.body()!!) {
                                 // here we will get the vendor ka address
-                                if (v.Vendor_Name.trim() == vendorName.trim() && poFilter(v)) {
+                                if (v.Vendor_Name.trim() == vendorName.trim() && v.Project_ID.trim() != projectId.trim() && poFilter(v)) {
+                                  // this is the case when the db manager don't have the project id of the user
                                     // we found our vendor yaaay
                                     // also we need to filter those whose po is closed
 
@@ -140,9 +147,22 @@ class HomeFragmentViewModel(
                                     if(mapVendorEntityToVendorAddress.latitude!=-1.0 || mapVendorEntityToVendorAddress.longitude!=-1.0){
                                         storeAddressesInDatabase(mapVendorEntityToVendorAddress)
                                     }
+                                }else if (v.Vendor_Name.trim() == vendorName.trim() && v.Project_ID.trim() == projectId.trim() && poFilter(v)){
+                                    // this is the case when the database manager have the project id
+                                    tempList.add(v)
+                                    vendorAddressesLiveData.postValue(tempList)
+
+                                    val mapVendorEntityToVendorAddress =
+                                        mapVendorEntityToVendorAddress(
+                                            labourName,
+                                            v
+                                        )
+
+                                    if(mapVendorEntityToVendorAddress.latitude!=-1.0 || mapVendorEntityToVendorAddress.longitude!=-1.0){
+                                        storeAddressesInDatabase(mapVendorEntityToVendorAddress)
+                                    }
                                 }
                             }
-
                         } else {
                             Snackbar.make(
                                 view,
@@ -168,19 +188,23 @@ class HomeFragmentViewModel(
     }
 
 
+    // this error was happening because the user was using PO CLOSED before as they key
     private fun poFilter(vendor: VendorEntity): Boolean {
-        return !vendor.PO_Status.trim().equals("PO Closed", true)
+        return !vendor.PO_Status.trim()
+            .contains("Closed", true)
     }
 
     fun mapVendorEntityToVendorAddress(
         labourName: String,
         v: VendorEntity
     ): VendorAddresses {
-        val latiLongi = v.Lati_Longi
+        val latiLongi = Utils(activity).getLocationFromAddress(v.Address)
+        if(latiLongi == null){
+            throw NullPointerException()
+        }
         try {
-            val split = latiLongi.split(",")
-            val latitude = split[0].trim().toDouble()
-            val longitude = split[1].trim().toDouble()
+            val latitude = latiLongi.latitude
+            val longitude = latiLongi.longitude
 
             return VendorAddresses(
                 labourName = labourName,

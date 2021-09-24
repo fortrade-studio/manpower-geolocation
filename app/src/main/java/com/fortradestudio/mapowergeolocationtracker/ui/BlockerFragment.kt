@@ -22,10 +22,11 @@ import com.google.firebase.database.ValueEventListener
 import java.text.SimpleDateFormat
 import java.util.*
 
-class BlockerFragment : Fragment() , Thread.UncaughtExceptionHandler{
+class BlockerFragment : Fragment(), Thread.UncaughtExceptionHandler {
 
     private lateinit var blockerFragmentBinding: FragmentBlockerBinding
-    companion object{
+
+    companion object {
         private const val TAG = "BlockerFragment"
     }
 
@@ -41,55 +42,17 @@ class BlockerFragment : Fragment() , Thread.UncaughtExceptionHandler{
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-
         Thread.setDefaultUncaughtExceptionHandler(this)
+        val auth = FirebaseAuth.getInstance()
 
-        val auth = FirebaseAuth.getInstance();
-        val database = FirebaseDatabase.getInstance()
-        val myRef = database.getReference("key")
+        if (auth.currentUser != null) {
+            findNavController().navigate(R.id.action_blockerFragment_to_homeFragment)
 
-//        Blocker key
-        myRef.setValue("1234")
-        fun Context.hideKeyboard(view: View) {
-            val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
-            inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+        } else {
+            findNavController().navigate(
+                R.id.action_blockerFragment_to_loginFragment
+            )
         }
-        fun Fragment.hideKeyboard() {
-            view?.let { activity?.hideKeyboard(it) }
-        }
-        myRef.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                // This method is called once with the initial value and again
-                // whenever data at this location is updated.
-                val value = dataSnapshot.getValue()
-//                Log.d("key", "Value is: $value")
-
-                blockerFragmentBinding.startExperienceBtn.setOnClickListener {
-                    val keyValue = blockerFragmentBinding.keyValue.text.toString()
-                    hideKeyboard()
-//                    key checking
-                    if (value == keyValue) {
-                        if (auth.currentUser != null) {
-                            findNavController().navigate(R.id.action_blockerFragment_to_homeFragment)
-
-                        } else {
-                            findNavController().navigate(
-                                R.id.action_blockerFragment_to_loginFragment
-                            )
-                        }
-                    } else {
-                        Toast.makeText(activity, "Enter valid key!", Toast.LENGTH_SHORT).show()
-                    }
-                }
-//                Toast.makeText(this,"done",L)
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                // Failed to read value
-                Log.w("key", "Failed to read value.", error.toException())
-            }
-        })
-
 
     }
 

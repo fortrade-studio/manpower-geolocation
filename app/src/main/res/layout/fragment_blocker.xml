@@ -8,23 +8,13 @@
     tools:context=".ui.BlockerFragment">
 
 
-    <Button
-        android:id="@+id/startExperienceBtn"
+    <ImageView
+        android:id="@+id/imageView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="96dp"
-        android:layout_marginTop="216dp"
-        android:text="@string/button_experience"
+        android:src="@drawable/placeholderlogo"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
-    <EditText
-        android:id="@+id/keyValue"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="textPersonName"
-        android:hint="Enter key"
-        tools:layout_editor_absoluteX="96dp"
-        tools:layout_editor_absoluteY="128dp" />
 </androidx.constraintlayout.widget.ConstraintLayout>

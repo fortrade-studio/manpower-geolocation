@@ -58,6 +58,10 @@
     <string name="clocked_in">CLOCKED IN</string>
     <string name="go_back">Go Back</string>
     <string name="clockError">Something went wrong while fetching the data</string>
+    <string name="material_title">App Update Available</string>
+    <string name="material_message">You Need To Update the App !</string>
+    <string name="material_update">Update</string>
+    <string name="material_exit">Exit</string>
 
 
 </resources>
