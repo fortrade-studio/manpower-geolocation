@@ -136,6 +136,7 @@ class HomeFragmentViewModel(
                                     // also we need to filter those whose po is closed
 
                                     tempList.add(v)
+                                    Log.i(TAG,v.toString())
                                     vendorAddressesLiveData.postValue(tempList)
 
                                     val mapVendorEntityToVendorAddress =
