@@ -7,9 +7,8 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.location.LocationManager
-import android.net.ConnectivityManager
-import android.net.NetworkRequest
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -18,15 +17,11 @@ import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.fortradestudio.mapowergeolocationtracker.ui.HomeFragment
-import com.fortradestudio.mapowergeolocationtracker.viewmodel.clockFragment.ClockFragmentViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.dialog.MaterialDialogs
 import com.google.android.play.core.appupdate.AppUpdateManager
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
-import com.google.android.play.core.install.model.AppUpdateType
-import com.google.android.play.core.install.model.UpdateAvailability
+import com.google.firebase.firestore.FirebaseFirestore
 import com.permissionx.guolindev.PermissionX
-import java.text.SimpleDateFormat
 import java.util.*
 
 
@@ -38,6 +33,7 @@ class MainActivity : AppCompatActivity() {
         const val notification_Cache = "notificationcache"
         private const val TAG = "MainActivity"
         lateinit var  appUpdateManager:AppUpdateManager
+        val firebase = FirebaseFirestore.getInstance()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,7 +42,7 @@ class MainActivity : AppCompatActivity() {
 
         // we will also check for the update here also
         appUpdateManager = AppUpdateManagerFactory.create(this)
-        checkUpdate(appUpdateManager)
+        checkUpdate()
 
         requestLocationPermissionElseQuit()
         createNotificationChannel()
@@ -56,24 +52,24 @@ class MainActivity : AppCompatActivity() {
         val editor = preferences.getString(HomeFragment.notification_Cache, null)
         Log.i(TAG, "onCreate: $editor")
     }
-
-    private fun checkUpdate(appUpdateManager: AppUpdateManager) {
-        val appUpdateInfo = appUpdateManager.appUpdateInfo
-        appUpdateInfo.addOnSuccessListener {
-            if (it.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE) {
-                // this is where we will show the alert box
+    /*
+        firestore.collection("Update")
+            .document("update")
+            .get()
+            .addOnSuccessListener {
                 MaterialAlertDialogBuilder(this)
-                    .setTitle(R.string.material_title)
-                    .setMessage(R.string.material_message)
-                    .setCancelable(false)
-                    .setPositiveButton(R.string.material_update) { dialogInterface: DialogInterface, i: Int ->
-                        try {
-                            startActivity(
+                    .setTitle("Update Available")
+                    .setPositiveButton("Update")
+            }
+             startActivity(
                                 Intent(
                                     Intent.ACTION_VIEW,
                                     Uri.parse("market://details?id=$packageName")
                                 )
                             )
+
+                             try {
+
                         } catch (e: ActivityNotFoundException) {
                             startActivity(
                                 Intent(
@@ -82,11 +78,52 @@ class MainActivity : AppCompatActivity() {
                                 )
                             )
                         }
-                    }.setNegativeButton(R.string.material_exit) { d, i ->
-                        finish()
-                    }.show()
-            }
+     */
+
+    private fun checkUpdate() {
+        try {
+            val versionName: String = this.getPackageManager()
+                .getPackageInfo(this.packageName, 0).versionName.trim()
+
+            
+            firebase.collection("Update")
+                .document("update")
+                .get()
+                .addOnSuccessListener {
+                    Log.i(TAG, "checkUpdate: ${it.getBoolean("update")}")
+                    if (it.getString("version")!!.trim()!=versionName && it.getBoolean("update") == true) {
+                        MaterialAlertDialogBuilder(this)
+                            .setTitle("Update Available")
+                            .setCancelable(false)
+                            .setPositiveButton("update") { dialogInterface: DialogInterface, i: Int ->
+                                try {
+                                    startActivity(
+                                        Intent(
+                                            Intent.ACTION_VIEW,
+                                            Uri.parse("market://details?id=$packageName")
+                                        )
+                                    )
+
+                                } catch (e: ActivityNotFoundException) {
+                                    startActivity(
+                                        Intent(
+                                            Intent.ACTION_VIEW,
+                                            Uri.parse("https://play.google.com/store/apps/details?id=$packageName")
+                                        )
+                                    )
+                                }
+                            }
+                            .show()
+                    }
+                }
+                .addOnFailureListener {
+                    Log.e(TAG, "checkUpdate: ", it)
+                }
+
+        }catch (e:PackageManager.NameNotFoundException){
+            Toast.makeText(this, "Failed To check for updates", Toast.LENGTH_SHORT).show()
         }
+        
     }
 
 
@@ -140,7 +177,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        checkUpdate(appUpdateManager)
+        checkUpdate()
     }
 
     private fun openLocationSetting() {

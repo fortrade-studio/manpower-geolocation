@@ -182,7 +182,7 @@ class AddressesAdapter(
                     LocationDao(target.latitude, target.longitude)
                 )
 
-            onFetched(abs(calculateLinearDistance) <= 500, calculateLinearDistance)
+            onFetched(true, calculateLinearDistance)
 
         }) {
             Log.e(TAG, "onViewCreated: ", it)
